@@ -26,7 +26,7 @@ Tested with **956 T####.ithmb files** from an iPhone 5 (iOS 7) iPod Photo Cache 
 
 | Type                                | Description                                                                                                                                                     | Our support                                                                                                                    |
 | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **T-prefix** (e.g. `T####.ithmb`)   | Contains a single full-resolution photo as an embedded JPEG (JFIF or Exif). These are found in newer iOS device caches (iPhone 5 and later).                    | ✅ **Fully supported** --- the primary path. 956/956 verified.                                                                   |
+| **T-prefix** (e.g. `T####.ithmb`)   | Contains a single full-resolution photo as an embedded JPEG (JFIF or Exif). These are found in newer iOS device caches (iPhone 5 and later).                    | ✅ **Fully supported** --- the primary path. 956/956 verified.                                                                 |
 | **F-prefix** (e.g. `F1019_1.ithmb`) | Older format used by iPods and early iPhones. Contains multiple raw-format thumbnails concatenated together (RGB565, YUV422, YCbCr420). These are uncompressed. | ⚠️ Best-effort decoders exist for 6 known profiles (1007, 1009, 1015, 1019, 1020, 1023). Untested due to lack of sample files. |
 
 ### Decode pipeline
@@ -132,11 +132,11 @@ ig_plugin_get_api() -> IGPluginApi -> GetCodec() -> IGCodecApi
 
 ### Key source files
 
-| File                  | Description                                                                                                                   |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| File                  | Description                                                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `IthmbCodecPlugin.cs` | Main plugin implementation (612 lines) --- entry point, codec API, JPEG extraction, raw profile decoders, EXIF parsing, helpers |
-| `IthmbCodec.csproj`   | .NET 10 Native AOT project targeting `win-x64` and `ARM64`                                                                    |
-| `igplugin.json`       | Plugin manifest consumed by ImageGlass on startup                                                                             |
+| `IthmbCodec.csproj`   | .NET 10 Native AOT project targeting `win-x64` and `ARM64`                                                                      |
+| `igplugin.json`       | Plugin manifest consumed by ImageGlass on startup                                                                               |
 
 ### Raw profile definitions
 
@@ -159,8 +159,8 @@ The codec parses TIFF IFD0 tag 0x0112 from the JPEG APP1 segment and sets `outIn
 
 ## Verified devices and formats
 
-| Device   | iOS version | Files tested    | Result                               |
-| -------- | ----------- | --------------- | ------------------------------------ |
+| Device   | iOS version | Files tested    | Result                                 |
+| -------- | ----------- | --------------- | -------------------------------------- |
 | iPhone 5 | iOS 7       | 956 T####.ithmb | ✅ 100% --- all files yield valid JPEG |
 
 If you test this plugin with a different device or iOS version, please open an issue with sample files (or a link to them).
@@ -204,6 +204,6 @@ The standalone repo (`B67687/ithmb-codec`) is the primary development home. The 
 
 ## License
 
-MIT --- see [LICENSE](LICENSE).
+MIT --- see [LICENSE](../../LICENSE).
 
 The original IthmbDecoder reference implementation (PR [#2316](https://github.com/d2phap/ImageGlass/pull/2316)) was GPL-3.0. This plugin is a clean-room implementation for the v10 SDK ABI, informed by format behavior described in that PR but using no GPL code.
