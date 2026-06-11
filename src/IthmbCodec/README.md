@@ -92,16 +92,24 @@ Copy-Item igplugin.json bin/Release/net10.0/win-x64/native/
 Compress-Archive -Path bin/Release/net10.0/win-x64/native/* -DestinationPath IthmbCodec_win-x64.zip
 ```
 
-### Linux (verification only)
+### Cross-platform
 
-Native AOT cross-compilation for Windows is not supported from Linux. However, you can verify the compilation by publishing for `linux-x64`:
+Native AOT cross-compilation is not supported. You must build on each target platform:
+
+| Target      | Command                                  | Output             |
+| ----------- | ---------------------------------------- | ------------------ |
+| Windows x64 | `dotnet publish -c Release -r win-x64`   | `IthmbCodec.dll`   |
+| Windows ARM | `dotnet publish -c Release -r win-arm64` | `IthmbCodec.dll`   |
+| Linux x64   | `dotnet publish -c Release -r linux-x64` | `IthmbCodec.so`    |
+| macOS ARM   | `dotnet publish -c Release -r osx-arm64` | `IthmbCodec.dylib` |
+
+### Running tests
 
 ```bash
-git clone https://github.com/ImageGlass/SDK.git imageglass-sdk --depth 1
-dotnet publish src/IthmbCodec/IthmbCodec.csproj -c Release -r linux-x64
+dotnet test src/IthmbCodec/test/IthmbCodec.Tests.csproj -c Release
 ```
 
-This produces `IthmbCodec.so` instead of `IthmbCodec.dll`. It confirms the code compiles correctly through the Native AOT pipeline.
+Tests cover: RGB565 decode (corner cases, endianness), YUV422/Ycbcr420 neutral chroma, JPEG slice detection (SOI/JFIF/EOI), EXIF orientation parsing (19 tests total).
 
 ### Building the SDK dependency
 
@@ -132,24 +140,26 @@ ig_plugin_get_api() -> IGPluginApi -> GetCodec() -> IGCodecApi
 
 ### Key source files
 
-| File                  | Description                                                                                                                     |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `IthmbCodecPlugin.cs` | Main plugin implementation (612 lines) --- entry point, codec API, JPEG extraction, raw profile decoders, EXIF parsing, helpers |
-| `IthmbCodec.csproj`   | .NET 10 Native AOT project targeting `win-x64` and `ARM64`                                                                      |
-| `igplugin.json`       | Plugin manifest consumed by ImageGlass on startup                                                                               |
+| File                  | Description                                                                                                                      |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `IthmbCodecPlugin.cs` | Main plugin implementation (~670 lines) --- entry point, codec API, JPEG extraction, raw profile decoders, EXIF parsing, helpers |
+| `IthmbCodec.csproj`   | .NET 10 Native AOT project targeting `win-x64`, `win-arm64`, `linux-x64`, `osx-arm64`                                            |
+| `igplugin.json`       | Plugin manifest consumed by ImageGlass on startup                                                                                |
+| `test/`               | xUnit test project (19 tests) covering RGB565, YUV422, YCbCr420, JPEG extraction, EXIF orientation                               |
 
 ### Raw profile definitions
 
 Six legacy profiles are defined based on known iPod/iPhone thumbnail formats:
 
-| Profile | Resolution | Encoding | Notes               |
-| ------- | ---------- | -------- | ------------------- |
-| 1007    | 480×864    | RGB565   | Swapped dimensions  |
-| 1009    | 42×30      | RGB565   | Smallest thumbnail  |
-| 1015    | 130×88     | RGB565   | Slideshow browser   |
-| 1019    | 720×480    | YUV422   | TV-out resolution   |
-| 1020    | 176×220    | RGB565   | Portrait thumbnail  |
-| 1023    | 176×132    | RGB565   | Landscape thumbnail |
+| Profile | Resolution | Encoding    | Notes                                    |
+| ------- | ---------- | ----------- | ---------------------------------------- |
+| 1007    | 480×864    | RGB565      | Swapped dimensions                       |
+| 1009    | 42×30      | RGB565      | Smallest thumbnail                       |
+| 1015    | 130×88     | RGB565      | Slideshow browser                        |
+| 1019    | 720×480    | YUV422      | TV-out resolution                        |
+| 1020    | 176×220    | RGB565      | Portrait thumbnail                       |
+| 1023    | 176×132    | RGB565      | Landscape thumbnail                      |
+| 1067    | 720×480    | YCbCr 4:2:0 | iPod Classic 6G / Nano 3G (padded frame) |
 
 ### EXIF orientation parsing
 
@@ -173,8 +183,7 @@ If you test this plugin with a different device or iOS version, please open an i
 2. **Legacy raw profiles are untested** --- the decoders exist (RGB565, YUV422, YCbCr420) but no sample files were available for verification.
 3. **No drag-and-drop in file dialog** --- ImageGlass v10 Beta 2 doesn't register `.ithmb` for the open-file dialog. Use drag-and-drop.
 4. **No folder browsing** --- third-party extensions can't be registered for folder navigation in Beta 2.
-5. **Windows only** --- Native AOT is platform-specific. Only `win-x64` is published.
-6. **Single-frame only** --- `.ithmb` files contain a single image per file. No animation/multi-frame support.
+5. **Single-frame only** --- `.ithmb` files contain a single image per file. No animation/multi-frame support.
 
 ---
 
