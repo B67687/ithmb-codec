@@ -251,6 +251,9 @@ Format specifications (resolution per format ID, byte layout, encoding types) ar
 | [**tbutter/podsyncr**](https://github.com/tbutter/podsyncr)                                                                      | tbutter            | iPod Nano 2G photo syncer (2006). Writes F1023/F1032 .ithmb files with configurable endianness.                                               |
 | [**libgpod/gtkpod**](https://github.com/gtkpod/libgpod)                                                                          | gtkpod team        | C library with 22 format variants, RGB565/RGB555/RGB888/UYVY/I420 packers, complete ArtworkDB/PhotoDB parser. 22 years of Linux distribution. |
 | [**shinyquagsire23 gist**](https://gist.github.com/shinyquagsire23/5ac38487b4c8f9252e78e0275814c90b)                             | shinyquagsire23    | C code for iPod Nano 6G Photo DB reading confirming F1093 = 512×512 RGB565 decode.                                                            |
+| [**Steee29/ithmb_converter**](https://github.com/Steee29/ithmb_converter)                                                        | Steee29            | Python iOS 1.x converter. Format table: 3004=55×55, 3009=120×160, 3011=75×75 — differs from our libgpod-sourced dimensions.                   |
+| [**wrinklykong/pyithmb**](https://github.com/wrinklykong/pyithmb)                                                                | wrinklykong        | iPod nano CLCL nibble-chroma decoder confirming the Keith Wiley packing method.                                                               |
+| [**thomas-alrek/iPod-photo-database**](https://github.com/thomas-alrek/iPod-photo-database)                                      | thomas-alrek       | Node.js Photo Database parser with ithmb → JPEG conversion.                                                                                   |
 
 ### Color conversion references
 
