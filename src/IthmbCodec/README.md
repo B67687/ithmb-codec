@@ -211,8 +211,31 @@ The standalone repo (`B67687/ithmb-codec`) is the primary development home. The 
 
 ---
 
+## References and Acknowledgments
+
+This implementation draws on the work of several open-source projects that reverse-engineered the `.ithmb` format. Their findings are referenced in the code and documentation.
+
+| Project                                                                             | Author(s)       | What it contributed                                                                                                                                                                                                 | License |
+| ----------------------------------------------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| [**Keith's iPod Photo Reader**](https://github.com/kebwi/Keiths_iPod_Photo_Reader)  | Keith W.        | Original reverse engineering of .ithmb: 13 decode methods, interlaced YUV 4:2:2, 4:2:0, RGB565, RGB32, grayscale. The most comprehensive format reference available. Format documentation reproduced in README.txt. | GPL-2.0 |
+| [**ithmbrdr**](https://github.com/cyianor/ithmbrdr)                                 | cyianor         | Go implementation of F1067 planar YCbCr 4:2:0 using correct BT.601 coefficients. Confirmed the "half padded" frame structure for iPod Classic 6G / Nano 3G.                                                         | MIT     |
+| [**andrewmalta/ithmb**](https://github.com/andrewmalta/ithmb)                       | Andrew Malta    | Python decoder for F1019 interlaced YUV (720x480) and F1015/F1024/F1036 16-bit RGB. Confirmed the CLCL packed-chroma pixel layout.                                                                                  | MIT     |
+| [**ithmb-extractor-F1007**](https://github.com/Gaurav-Phogat/ithmb-extractor-F1007) | Gaurav Phogat   | Python decoder for F1007 RGB565 at 480×864 (iPod nano 7G). Confirmed 5-6-5 bit layout with MSB-replication scaling.                                                                                                 | MIT     |
+| [**ImageGlass**](https://github.com/d2phap/ImageGlass)                              | Duong Dieu Phap | Host application. Original PR [#2316](https://github.com/d2phap/ImageGlass/pull/2316) proposed GPL-3.0 ITHMB support in v9; this plugin is a clean-room MIT replacement for the v10 Native AOT plugin ABI.          | GPL-3.0 |
+| [**ImageGlass SDK**](https://github.com/ImageGlass/SDK)                             | Duong Dieu Phap | Native codec plugin ABI (`IGPluginApi`, `IGCodecApi`, `IGHostApi` types), `igplugin.json` schema, and the Base64Codec reference sample.                                                                             | MIT     |
+
+### Color conversion references
+
+- The YCbCr → RGB conversion uses the **ITU-R BT.601** matrix (JPEG standard), as documented in [Recommendation ITU-R BT.601-7](https://www.itu.int/rec/R-REC-BT.601).
+- The 16-bit RGB565 → RGB888 scaling uses standard **MSB replication** (also used by ffmpeg, libpng, and Skia).
+
+### Additional format references
+
+- [Just Solve the File Format Problem: IThmb](http://justsolve.archiveteam.org/wiki/IThmb) — community wiki documenting known profile prefixes and resolutions.
+- [iThmb Format Guide (ithmb.org)](https://ithmb.org/guide) — browser-based decoder with descriptions of encoding variants.
+
+---
+
 ## License
 
 MIT --- see [LICENSE](../../LICENSE).
-
-The original IthmbDecoder reference implementation (PR [#2316](https://github.com/d2phap/ImageGlass/pull/2316)) was GPL-3.0. This plugin is a clean-room implementation for the v10 SDK ABI, informed by format behavior described in that PR but using no GPL code.
