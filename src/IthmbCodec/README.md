@@ -1,6 +1,6 @@
 # ITHMB Codec for ImageGlass v10
 
-A Native AOT C# codec plugin for [ImageGlass v10](https://imageglass.org) that opens Apple `.ithmb` thumbnail-cache files. Primarily works by locating embedded JPEG payloads inside `.ithmb` files and decoding them via StbImageSharp. Also includes SIMD-accelerated decoders (SSE2/SSSE3/Vector128) for 18 legacy raw thumbnail profiles covering iPod Photo through iPhone 2G.
+A Native AOT C# codec plugin for [ImageGlass v10](https://imageglass.org) that opens Apple `.ithmb` thumbnail-cache files. Primarily works by locating embedded JPEG payloads inside `.ithmb` files and decoding them via StbImageSharp. Also includes SIMD-accelerated decoders (SSE2/SSSE3/Vector128) for 20 legacy raw thumbnail profiles covering iPod Photo through iPhone 2G.
 
 Tested with **956 T####.ithmb files** from an iPhone 5 (iOS 7) iPod Photo Cache --- **100% extraction rate**.
 
@@ -28,7 +28,7 @@ Tested with **956 T####.ithmb files** from an iPhone 5 (iOS 7) iPod Photo Cache 
 | Type                                | Description                                                                                                                                                     | Our support                                                                                                                                   |
 | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | **T-prefix** (e.g. `T####.ithmb`)   | Contains a single full-resolution photo as an embedded JPEG (JFIF or Exif). These are found in newer iOS device caches (iPhone 5 and later).                    | ✅ **Fully supported** --- the primary path. 956/956 verified.                                                                                |
-| **F-prefix** (e.g. `F1019_1.ithmb`) | Older format used by iPods and early iPhones. Contains multiple raw-format thumbnails concatenated together (RGB565, YUV422, YCbCr420). These are uncompressed. | ⚠️ Best-effort decoders exist for 18 known profiles. Untested due to lack of sample files. See [raw profile table](#raw-profile-definitions). |
+| **F-prefix** (e.g. `F1019_1.ithmb`) | Older format used by iPods and early iPhones. Contains multiple raw-format thumbnails concatenated together (RGB565, YUV422, YCbCr420). These are uncompressed. | ⚠️ Best-effort decoders exist for 20 known profiles. Untested due to lack of sample files. See [raw profile table](#raw-profile-definitions). |
 
 ### Decode pipeline
 
@@ -59,7 +59,7 @@ Files larger than **100 MB** are rejected before reading to prevent OOM from pat
 
    ```
    %LocalAppData%\ImageGlass_10\_plugins\IthmbCodec\
-       IthmbCodec.dll        (1.8 MB --- native plugin with embedded JPEG decoder)
+       IthmbCodec.dll        (1.4 MB --- native plugin with embedded JPEG decoder)
        igplugin.json         (plugin manifest)
        profiles.json         (optional --- external profile definitions)
    ```
@@ -84,7 +84,7 @@ Requires .NET 10 SDK and Visual Studio 2022 with the "Desktop development with C
 git clone https://github.com/ImageGlass/SDK.git imageglass-sdk --depth 1
 
 # Publish as Native AOT shared library
-dotnet publish src/IthmbCodec/IthmbCodec.csproj -c Release -r win-x64
+dotnet publish src/IthmbCodec/IthmbCodec.csproj -c Release -r win-x64 -p:IlcInstructionSet=base
 ```
 
 Output lands in `src/IthmbCodec/bin/Release/net10.0/win-x64/native/`. To package for distribution:
@@ -112,7 +112,7 @@ Native AOT cross-compilation is not supported. You must build on each target pla
 dotnet test src/IthmbCodec/test/IthmbCodec.Tests.csproj -c Release
 ```
 
-Tests cover: RGB565 decode (65,536 exhaustive + SIMD-vs-scalar), 200 fuzz tests across 4 decoders, YUV422/Ycbcr420 cross-reference and roundtrip, JPEG slice detection, EXIF orientation parsing, SIMD correctness, memory safety, property invariants, JSON parser tests (**244 tests total**).
+Tests cover: RGB565 + RGB555 decode (both 65,536 exhaustive + SIMD-vs-scalar), 250 fuzz tests across 5 decoders, YUV422/Ycbcr420 cross-reference and roundtrip, JPEG slice detection, EXIF orientation parsing, SIMD correctness, memory safety, property invariants, JSON parser tests (**307 tests total**).
 
 ---
 
@@ -136,16 +136,16 @@ ig_plugin_get_api() -> IGPluginApi -> GetCodec() -> IGCodecApi
 
 | File                           | Description                                                                                                                       |
 | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| `IthmbCodecPlugin.cs`          | Plugin ABI, init, JPEG pipeline, EXIF parsing, JSON profile loader (~846 lines)                                                   |
-| `IthmbCodecPlugin.Decoding.cs` | Decode algorithms + SIMD (SSE2/SSSE3/Vector128) for RGB565, YUV422, YCbCr420 (~454 lines)                                         |
+| `IthmbCodecPlugin.cs`          | Plugin ABI, init, JPEG pipeline, EXIF parsing, JSON profile loader (~864 lines)                                                   |
+| `IthmbCodecPlugin.Decoding.cs` | Decode algorithms + SIMD (SSE2/SSSE3/Vector128) for RGB565, YUV422, YCbCr420 (~551 lines)                                         |
 | `IthmbCodec.csproj`            | .NET 10 Native AOT project targeting `win-x64`, `win-arm64`, `linux-x64`, `osx-arm64`                                             |
 | `igplugin.json`                | Plugin manifest consumed by ImageGlass on startup                                                                                 |
 | `profiles.json`                | External profile definitions (sidecar, merged on first decode, overridable without recompile)                                     |
-| `test/IthmbCodecTests.cs`      | xUnit test project (244 tests) --- exhaustive RGB565, SIMD-vs-scalar, 200 fuzz, roundtrip, EXIF, JSON parser, property invariants |
+| `test/IthmbCodecTests.cs`      | xUnit test project (307 tests) --- exhaustive RGB565, SIMD-vs-scalar, 200 fuzz, roundtrip, EXIF, JSON parser, property invariants |
 
 ### Raw profile definitions
 
-18 profiles are defined based on known iPod/iPhone thumbnail formats, aggregated from iOpenPod, Keith's iPod Photo Reader, and the original iLounge format specification thread. Additional profiles can be added at runtime via an external `profiles.json` sidecar file (shipped with the plugin, no recompile needed). Decompression decoders return `false` on undersized buffer, causing `DecodeRawProfile` to report `IGStatus.DecodeFailed` instead of silently producing empty output.
+20 profiles are defined based on known iPod/iPhone thumbnail formats, aggregated from iOpenPod, Keith's iPod Photo Reader, and the original iLounge format specification thread. Additional profiles can be added at runtime via an external `profiles.json` sidecar file (shipped with the plugin, no recompile needed). Decompression decoders return `false` on undersized buffer, causing `DecodeRawProfile` to report `IGStatus.DecodeFailed` instead of silently producing empty output.
 
 | Profile | Resolution | Encoding    | Device(s)                              |
 | ------- | ---------- | ----------- | -------------------------------------- |
@@ -163,7 +163,12 @@ ig_plugin_get_api() -> IGPluginApi -> GetCodec() -> IGCodecApi
 | 1079    | 80×80      | RGB565      | iPod Nano 4G (photo)                   |
 | 1083    | 240×320    | RGB565      | iPod Nano 4G (photo)                   |
 | 1087    | 384×384    | RGB565      | iPod Nano 5G (photo)                   |
-| 3008    | 640×480    | RGB565      | iPhone 1G/2G, iPod Touch (full-screen) |
+| 1092    | 80×80      | RGB565      | iPod Nano 6G (photo thumbnail)         |
+| 1093    | 512×512    | RGB565      | iPod Nano 6G (full-screen photo)       |
+| 3004    | 56×55      | RGB555      | iPhone 1G/2G, iPod Touch (photo thumb) |
+| 3008    | 640×480    | RGB555      | iPhone 1G/2G, iPod Touch (full-screen) |
+| 3009    | 160×120    | RGB555      | iPhone 1G/2G, iPod Touch (photo prev)  |
+| 3011    | 80×79      | RGB555      | iPhone 1G/2G, iPod Touch (photo thumb) |
 
 ### External profiles.json
 
@@ -245,6 +250,10 @@ Format specifications (resolution per format ID, byte layout, encoding types) ar
 | [**worstje/repear**](https://github.com/worstje/repear)                                                                          | worstje            | Python ArtworkDB writer with complete format→dimension encoder table. Documents model-based format ID assignment.                             |
 | [**tbutter/podsyncr**](https://github.com/tbutter/podsyncr)                                                                      | tbutter            | iPod Nano 2G photo syncer (2006). Writes F1023/F1032 .ithmb files with configurable endianness.                                               |
 | [**libgpod/gtkpod**](https://github.com/gtkpod/libgpod)                                                                          | gtkpod team        | C library with 22 format variants, RGB565/RGB555/RGB888/UYVY/I420 packers, complete ArtworkDB/PhotoDB parser. 22 years of Linux distribution. |
+| [**XWBarton/iopenpod-plex**](https://github.com/XWBarton/iopenpod-plex)                                                          | XWBarton           | Active fork of iOpenPod with ArtworkDB writer and per-device format tables.                                                                   |
+| [**rainmore/iTunesDB-Parser-Rust**](https://github.com/rainmore/iTunesDB-Parser-Rust)                                            | rainmore           | Rust-based iTunesDB/PhotoDB parser with planned ithmb decode support.                                                                         |
+| [**gerion0/libgpod**](https://github.com/gerion0/libgpod)                                                                        | gerion0            | Python 3 port of libgpod with ithumb-writer format tables.                                                                                    |
+| [**shinyquagsire23 gist**](https://gist.github.com/shinyquagsire23/5ac38487b4c8f9252e78e0275814c90b)                             | shinyquagsire23    | C code for iPod Nano 6G Photo Database reading with direct F1093.ithmb decode.                                                                |
 
 ### Color conversion references
 
