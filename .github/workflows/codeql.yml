@@ -1,0 +1,63 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1" # weekly: Monday 06:00 UTC
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: csharp
+            build-mode: manual
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore SDK reference
+        run: |
+          # SDK is gitignored (not in repo); clone it fresh for CI
+          if [ ! -d imageglass-sdk ]; then
+            git clone --depth 1 https://github.com/ImageGlass/SDK.git imageglass-sdk
+          fi
+          cd imageglass-sdk
+          dotnet restore source/ImageGlass.SDK.csproj
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+          build-mode: ${{ matrix.build-mode }}
+
+      - name: Build project
+        run: |
+          dotnet build src/IthmbCodec/IthmbCodec.csproj -c Release
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
