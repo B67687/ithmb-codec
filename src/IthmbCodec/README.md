@@ -1,6 +1,6 @@
 # ITHMB Codec for ImageGlass v10
 
-A Native AOT C# codec plugin for [ImageGlass v10](https://imageglass.org) that opens Apple `.ithmb` thumbnail-cache files. Primarily works by locating embedded JPEG payloads inside `.ithmb` files and decoding them via StbImageSharp. Also includes SIMD-accelerated decoders (SSE2/SSSE3/Vector128) for 29 profile thumbnail profiles covering iPod Photo through iPhone 2G.
+A Native AOT C# codec plugin for [ImageGlass v10](https://imageglass.org) that opens Apple `.ithmb` thumbnail-cache files. Primarily works by locating embedded JPEG payloads inside `.ithmb` files and decoding them via StbImageSharp. Also includes SIMD-accelerated decoders (SSE2/SSSE3/Vector128) for 29 raw-format profiles covering iPod Photo through iPhone 2G.
 
 Tested with **956 T####.ithmb files** from an iPhone 5 (iOS 7) iPod Photo Cache --- **100% extraction rate**.
 
@@ -112,7 +112,7 @@ Native AOT cross-compilation is not supported. You must build on each target pla
 dotnet test src/IthmbCodec/test/IthmbCodec.Tests.csproj -c Release
 ```
 
-Tests cover: RGB565 + RGB555 decode (both 65,536 exhaustive + SIMD-vs-scalar), 250 fuzz tests across 5 decoders, YUV422/Ycbcr420 cross-reference and roundtrip, JPEG slice detection, EXIF orientation parsing, SIMD correctness, memory safety, property invariants, JSON parser tests (**307 tests total**).
+Tests cover: RGB565 + RGB555 decode (both 65,536 exhaustive + SIMD-vs-scalar), 250 fuzz tests across 5 decoders, YUV422/Ycbcr420 cross-reference and roundtrip, JPEG slice detection, EXIF orientation parsing, SIMD correctness, memory safety, property invariants, JSON parser tests (**312 tests total**).
 
 ---
 
@@ -136,12 +136,12 @@ ig_plugin_get_api() -> IGPluginApi -> GetCodec() -> IGCodecApi
 
 | File                           | Description                                                                                                                       |
 | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| `IthmbCodecPlugin.cs`          | Plugin ABI, init, JPEG pipeline, EXIF parsing, JSON profile loader (~864 lines)                                                   |
-| `IthmbCodecPlugin.Decoding.cs` | Decode algorithms + SIMD (SSE2/SSSE3/Vector128) for RGB565, YUV422, YCbCr420 (~551 lines)                                         |
+| `IthmbCodecPlugin.cs`          | Plugin ABI, init, JPEG pipeline, EXIF parsing, JSON profile loader (~887 lines)                                                   |
+| `IthmbCodecPlugin.Decoding.cs` | Decode algorithms + SIMD (SSE2/SSSE3/Vector128) for RGB565, YUV422, YCbCr420 (~605 lines)                                         |
 | `IthmbCodec.csproj`            | .NET 10 Native AOT project targeting `win-x64`, `win-arm64`, `linux-x64`, `osx-arm64`                                             |
 | `igplugin.json`                | Plugin manifest consumed by ImageGlass on startup                                                                                 |
 | `profiles.json`                | External profile definitions (sidecar, merged on first decode, overridable without recompile)                                     |
-| `test/IthmbCodecTests.cs`      | xUnit test project (307 tests) --- exhaustive RGB565, SIMD-vs-scalar, 200 fuzz, roundtrip, EXIF, JSON parser, property invariants |
+| `test/IthmbCodecTests.cs`      | xUnit test project (312 tests) --- exhaustive RGB565, SIMD-vs-scalar, 200 fuzz, roundtrip, EXIF, JSON parser, property invariants |
 
 ### Raw profile definitions
 
@@ -235,7 +235,7 @@ The standalone repo (`B67687/ithmb-codec`) is the primary development home. The 
 
 ## References and Acknowledgments
 
-Every known open-source `.ithmb` implementation across the internet (GitHub, Codeberg, GitLab, SourceHut, Bitbucket, Gitee, Launchpad, SourceForge) was surveyed --- a total of **11 projects**. Below is the complete list with license compatibility for this MIT-licensed plugin.
+Every known open-source `.ithmb` implementation across the internet (GitHub, Codeberg, GitLab, SourceHut, Bitbucket, Gitee, Launchpad, SourceForge) was surveyed --- a total of **17 projects**. Below is the complete list with license compatibility for this MIT-licensed plugin.
 
 ### Directly incorporated (MIT-licensed, compatible)
 
