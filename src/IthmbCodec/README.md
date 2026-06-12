@@ -15,7 +15,6 @@ Tested with **956 T####.ithmb files** from an iPhone 5 (iOS 7) iPod Photo Cache 
 - [Verified devices and formats](#verified-devices-and-formats)
 - [Limitations](#limitations)
 - [Troubleshooting](#troubleshooting)
-- [SDK sample PR](#sdk-sample-pr)
 - [References and Acknowledgments](#references-and-acknowledgments)
 - [License](#license)
 
@@ -223,14 +222,6 @@ If you test this plugin with a different device or iOS version, please open an i
 If the plugin doesn't work for your files, try [ithmb.org](https://ithmb.org) --- a free browser-based `.ithmb` decoder with broader device support. No upload required.
 
 ---
-
-## SDK sample PR
-
-This plugin has been submitted as a sample to the [ImageGlass SDK](https://github.com/ImageGlass/SDK) repository:
-
-**[PR #2 --- samples: add IthmbCodec plugin](https://github.com/ImageGlass/SDK/pull/2)**
-
-The standalone repo (`B67687/ithmb-codec`) is the primary development home. The SDK PR is a mirror for reference.
 
 ---
 
