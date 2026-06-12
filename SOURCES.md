@@ -53,6 +53,19 @@ https://hungrypoint.com/Niki/iPod%20Photo%20Cache/Photo%20Database
 - `vhromanov.com/Males/Cody/iPod_Photo_Cache/` — domain gone
 - `home.fau.edu/schilitj/` — redirected (Wayback only)
 
+## File Juicer sample file (T117.ithmb)
+
+The macOS tool [File Juicer](https://echoone.com/filejuicer/formats/ithmb) provides a sample
+`.ithmb` file at `https://echoone.com/filejuicer/sample-files/T117.ithmb.zip`.
+
+This file begins with 67,696 bytes of the repeating pattern `80 10` followed by
+726,344 bytes of data that doesn't correspond to any known iPod/iPhone .ithmb format.
+It contains no embedded JPEG, no known profile prefix, and no image markers.
+**This is not a standard iPod/iPhone thumbnail cache file** — likely a File Juicer
+internal test file or a format variant specific to a different Apple OS version.
+
+Our codec correctly rejects it (`DecodeFailed`).
+
 ## Privacy note
 
 These files are hosted on personal web servers and university user directories.
