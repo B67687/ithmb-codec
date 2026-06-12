@@ -25,15 +25,15 @@ Tested with **956 T####.ithmb files** from an iPhone 5 (iOS 7) iPod Photo Cache 
 
 `.ithmb` files (iThumbnail cache) are a proprietary format used by Apple iOS devices to store photo thumbnails. Two broad categories exist:
 
-| Type                                | Description                                                                                                                                                     | Our support                                                                                                                                   |
-| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| **T-prefix** (e.g. `T####.ithmb`)   | Contains a single full-resolution photo as an embedded JPEG (JFIF or Exif). These are found in newer iOS device caches (iPhone 5 and later).                    | ✅ **Fully supported** --- the primary path. 956/956 verified.                                                                                |
+| Type                                | Description                                                                                                                                                     | Our support                                                                                                                             |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **T-prefix** (e.g. `T####.ithmb`)   | Contains a single full-resolution photo as an embedded JPEG (JFIF or Exif). These are found in newer iOS device caches (iPhone 5 and later).                    | ✅ **Fully supported** --- the primary path. 956/956 verified.                                                                          |
 | **F-prefix** (e.g. `F1019_1.ithmb`) | Older format used by iPods and early iPhones. Contains multiple raw-format thumbnails concatenated together (RGB565, YUV422, YCbCr420). These are uncompressed. | ⚠️ Best-effort decoders exist for 29 profiles. Untested due to lack of sample files. See [raw profile table](#raw-profile-definitions). |
 
 ### Decode pipeline
 
 1. **Read the file** --- a 4 MB header is read for JPEG scan, then the exact JPEG slice is seeked and read from the FileStream. Peak memory: ~5 MB for typical files.
-2. **JPEG scan** --- the file is scanned (SIMD-accelerated via `Span.IndexOf`) for a JPEG SOI marker (`FF D8`) followed within 128 bytes by either a JFIF or Exif header. If found, the JPEG payload is extracted (SOI to EOI) and decoded via StbImageSharp (MIT, ~200 KB, compiled into IthmbCodec.dll).
+2. **JPEG scan** --- the file is scanned (SIMD-accelerated via `Span.IndexOf`) for a JPEG SOI marker (`FF D8`) followed within 512 bytes by either a JFIF or Exif header. If found, the JPEG payload is extracted (SOI to EOI) and decoded via StbImageSharp (MIT, ~200 KB, compiled into IthmbCodec.dll).
 3. **Raw fallback** --- if no embedded JPEG is found, the first 4 bytes are read as a big-endian integer prefix and checked against known profiles. On match, the appropriate raw decoder (RGB565, YUV422, or YCbCr420) is used. The YUV422 decoder handles both linear (UYVY) and interlaced (F1019: even/odd rows in separate fields) layouts.
 4. **EXIF orientation** --- if the JPEG contains an EXIF APP1 segment with an orientation tag (0x0112), it is parsed and reported to the host. ImageGlass rotates the image accordingly.
 
@@ -167,13 +167,13 @@ ig_plugin_get_api() -> IGPluginApi -> GetCodec() -> IGCodecApi
 | 1087    | 384×384    | RGB565      | iPod Nano 5G (photo)                   |
 | 1092    | 80×80      | RGB565      | iPod Nano 6G (photo thumbnail)         |
 | 1093    | 512×512    | RGB565      | iPod Nano 6G (full-screen photo)       |
-| 1016    | 140×140    | RGB565      | iPod Photo 4G (cover art)             |
-| 1017    | 56×56      | RGB565      | iPod Photo 4G (cover art)             |
-| 1028    | 100×100    | RGB565      | iPod Video 5G (cover art)             |
-| 1029    | 200×200    | RGB565      | iPod Video 5G (cover art)             |
-| 1031    | 42×42      | RGB565      | iPod Nano (album art small)           |
-| 1055    | 128×128    | RGB565      | Classic/Nano3G/4G (cover art)         |
-| 1060    | 320×320    | RGB565      | Classic/Nano3G (cover art)            |
+| 1016    | 140×140    | RGB565      | iPod Photo 4G (cover art)              |
+| 1017    | 56×56      | RGB565      | iPod Photo 4G (cover art)              |
+| 1028    | 100×100    | RGB565      | iPod Video 5G (cover art)              |
+| 1029    | 200×200    | RGB565      | iPod Video 5G (cover art)              |
+| 1031    | 42×42      | RGB565      | iPod Nano (album art small)            |
+| 1055    | 128×128    | RGB565      | Classic/Nano3G/4G (cover art)          |
+| 1060    | 320×320    | RGB565      | Classic/Nano3G (cover art)             |
 | 3004    | 56×55      | RGB555      | iPhone 1G/2G, iPod Touch (photo thumb) |
 | 3008    | 640×480    | RGB555      | iPhone 1G/2G, iPod Touch (full-screen) |
 | 3009    | 160×120    | RGB555      | iPhone 1G/2G, iPod Touch (photo prev)  |
