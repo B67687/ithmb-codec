@@ -151,12 +151,14 @@ ig_plugin_get_api() -> IGPluginApi -> GetCodec() -> IGCodecApi
 | ------- | ---------- | ----------- | -------------------------------------- |
 | 1007    | 480×864    | RGB565      | iPod nano 7G (swapped dimensions)      |
 | 1009    | 42×30      | RGB565      | iPod Photo 4G (smallest thumbnail)     |
+| 1005    | 80×80      | RGB565      | iPod Nano 7G (photo thumbnail)         |
 | 1013    | 220×176    | RGB565      | iPod Photo 4G (full-screen)            |
 | 1015    | 130×88     | RGB565      | iPod Photo 4G (slideshow browser)      |
 | 1019    | 720×480    | YUV422      | iPod Photo/Video (TV-out, interlaced)  |
 | 1020    | 176×220    | RGB565      | iPod (portrait thumbnail)              |
 | 1023    | 176×132    | RGB565      | iPod Nano 1G/2G (landscape thumbnail)  |
 | 1024    | 320×240    | RGB565      | iPod Classic 5G/6G (full-screen)       |
+| 1032    | 42×37      | RGB565      | iPod Nano 1G/2G (photo list thumb)     |
 | 1036    | 50×41      | RGB565      | iPod Classic (smallest thumbnail)      |
 | 1066    | 64×64      | RGB565      | iPod Classic 6G (square photo)         |
 | 1067    | 720×480    | YCbCr 4:2:0 | iPod Classic 6G / Nano 3G (padded)     |
@@ -165,6 +167,13 @@ ig_plugin_get_api() -> IGPluginApi -> GetCodec() -> IGCodecApi
 | 1087    | 384×384    | RGB565      | iPod Nano 5G (photo)                   |
 | 1092    | 80×80      | RGB565      | iPod Nano 6G (photo thumbnail)         |
 | 1093    | 512×512    | RGB565      | iPod Nano 6G (full-screen photo)       |
+| 1016    | 140×140    | RGB565      | iPod Photo 4G (cover art)             |
+| 1017    | 56×56      | RGB565      | iPod Photo 4G (cover art)             |
+| 1028    | 100×100    | RGB565      | iPod Video 5G (cover art)             |
+| 1029    | 200×200    | RGB565      | iPod Video 5G (cover art)             |
+| 1031    | 42×42      | RGB565      | iPod Nano (album art small)           |
+| 1055    | 128×128    | RGB565      | Classic/Nano3G/4G (cover art)         |
+| 1060    | 320×320    | RGB565      | Classic/Nano3G (cover art)            |
 | 3004    | 56×55      | RGB555      | iPhone 1G/2G, iPod Touch (photo thumb) |
 | 3008    | 640×480    | RGB555      | iPhone 1G/2G, iPod Touch (full-screen) |
 | 3009    | 160×120    | RGB555      | iPhone 1G/2G, iPod Touch (photo prev)  |
