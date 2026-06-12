@@ -112,7 +112,7 @@ Native AOT cross-compilation is not supported. You must build on each target pla
 dotnet test src/IthmbCodec/test/IthmbCodec.Tests.csproj -c Release
 ```
 
-Tests cover: RGB565 + RGB555 decode (both 65,536 exhaustive + SIMD-vs-scalar), 250 fuzz tests across 5 decoders, YUV422/Ycbcr420 cross-reference and roundtrip, JPEG slice detection, EXIF orientation parsing, SIMD correctness, memory safety, property invariants, JSON parser tests (**312 tests total**).
+Tests cover: exhaustive RGB565 (65,536 values, pixel-perfect roundtrip) + RGB555 (32,768), 250 fuzz tests across 5 decoders, YUV422/Ycbcr420 roundtrip (gradient, ±5 tolerance), JPEG slice detection, EXIF orientation, SIMD correctness, memory safety, property invariants, JSON parser (**317 tests total**).
 
 ---
 
@@ -134,14 +134,15 @@ ig_plugin_get_api() -> IGPluginApi -> GetCodec() -> IGCodecApi
 
 ### Key source files
 
-| File                           | Description                                                                                                                       |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| `IthmbCodecPlugin.cs`          | Plugin ABI, init, JPEG pipeline, EXIF parsing, JSON profile loader (~887 lines)                                                   |
-| `IthmbCodecPlugin.Decoding.cs` | Decode algorithms + SIMD (SSE2/SSSE3/Vector128) for RGB565, YUV422, YCbCr420 (~605 lines)                                         |
-| `IthmbCodec.csproj`            | .NET 10 Native AOT project targeting `win-x64`, `win-arm64`, `linux-x64`, `osx-arm64`                                             |
-| `igplugin.json`                | Plugin manifest consumed by ImageGlass on startup                                                                                 |
-| `profiles.json`                | External profile definitions (sidecar, merged on first decode, overridable without recompile)                                     |
-| `test/IthmbCodecTests.cs`      | xUnit test project (312 tests) --- exhaustive RGB565, SIMD-vs-scalar, 200 fuzz, roundtrip, EXIF, JSON parser, property invariants |
+| File                           | Description                                                                                                                      |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `IthmbCodecPlugin.cs`          | Plugin ABI, init, JPEG pipeline, EXIF parsing, JSON profile loader (~887 lines)                                                  |
+| `IthmbCodecPlugin.Decoding.cs` | Decode algorithms + SIMD (SSE2/SSSE3/Vector128) for RGB565, RGB555, UYVY, YCbCr420 (~605 lines)                                  |
+| `IthmbCodecPlugin.Encoding.cs` | Synthetic encoder for all 5 raw formats — generates valid F-prefix .ithmb files for roundtrip testing                            |
+| `IthmbCodec.csproj`            | .NET 10 Native AOT project targeting `win-x64`, `win-arm64`, `linux-x64`, `osx-arm64`                                            |
+| `igplugin.json`                | Plugin manifest consumed by ImageGlass on startup                                                                                |
+| `profiles.json`                | External profile definitions (sidecar, merged on first decode, overridable without recompile)                                    |
+| `test/IthmbCodecTests.cs`      | xUnit test project (317 tests) --- exhaustive RGB565 roundtrip (65K values), SIMD-vs-scalar, 250 fuzz, YUV roundtrip, EXIF, JSON |
 
 ### Raw profile definitions
 
