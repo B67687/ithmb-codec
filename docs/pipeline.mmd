@@ -1,30 +1,31 @@
 flowchart LR
-    subgraph TEST["Development (local)"]
-        direction LR
-        BUILD["dotnet build"] --> TESTRUN["dotnet test (317 tests)"]
-        TESTRUN --> CLI["IthmbDecoder CLI Tool"]
+    subgraph DEV["Development"]
+        direction TB
+        BUILD["dotnet build -c Release"]
+        TEST["dotnet test (317 tests)"]
+        CLI["IthmbDecoder CLI Tool"]
+        BUILD --> TEST --> CLI
     end
 
-    subgraph CI["CI (GitHub Actions — on push)"]
-        direction LR
-        PUSH["git push"] --> CIBUILD["Build Release"]
-        CIBUILD --> CITEST["Run 317 Tests"]
-        CITEST --> CODEQL["CodeQL Security + Quality Scan"]
+    subgraph CI["CI (GitHub Actions)"]
+        direction TB
+        PUSH["git push to main"]
+        BT["Build + 317 Tests"]
+        CODEQL["CodeQL Security Scan"]
+        PUSH --> BT --> CODEQL
     end
 
-    subgraph RELEASE["Release (manual)"]
-        direction LR
-        MAIN["main branch"] --> PUBLISH["dotnet publish -r win-x64"]
-        PUBLISH --> ZIP["Package IthmbCodec_win-x64.zip"]
-        ZIP --> GH["GitHub Release"]
+    subgraph REL["Release"]
+        direction TB
+        PUB["dotnet publish"]
+        PKG["Package .zip"]
+        GH["GitHub Release"]
+        PUB --> PKG --> GH
     end
 
     subgraph USAGE["Usage"]
-        direction LR
-        GH --> IG["ImageGlass v10 Plugin"]
-        GH --> CLIUSAGE["Standalone CLI Decoder"]
-        CLIUSAGE --> BMP["BMP Output"]
+        IG["ImageGlass v10 Plugin"]
+        CLI_USAGE["Standalone CLI Decoder"]
     end
 
-    BUILD -->|"cross-platform"| RELEASE
-    TESTRUN --> CI
+    DEV --> CI --> REL --> USAGE

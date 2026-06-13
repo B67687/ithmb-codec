@@ -1,0 +1,55 @@
+---
+config:
+  theme: neutral
+  flowchart:
+    curve: basis
+---
+flowchart TB
+  %% ── Entry point ──
+  INPUT[/".ithmb File"/]
+
+  %% ── Size guard ──
+  SIZEGUARD{Size ≤ 100 MB?}
+  INPUT -- "read length" --> SIZEGUARD
+  SIZEGUARD -- "No" --> REJECT([Reject])
+  SIZEGUARD -- "Yes" --> PEEK[Peek 4 MB Header]
+
+  %% ── JPEG scan ──
+  SCAN["
+SIMD: Find SOI FF D8
++ Validate JFIF/Exif
+"]
+  PEEK -- "scan for marker" --> SCAN
+
+  FOUND{JFIF/Exif<br>within 512B?}
+  SCAN -- "check header" --> FOUND
+
+  %% ── JPEG Path ──
+  subgraph JPEG["JPEG Path"]
+      direction TB
+      EXTRACT[Extract JPEG Slice<br>SOI → EOI]
+      STB["StbImageSharp Decode<br>→ RGBA → BGRA"]
+      EXTRACT --> STB
+  end
+
+  FOUND -- "Yes → embedded JPEG" --> JPEG
+
+  %% ── Raw Fallback ──
+  subgraph RAW["Raw Fallback"]
+      direction TB
+      PREFIX[Read 4-Byte BE Prefix]
+      LOOKUP[("47 Profile Lookup<br>22 Photo + 25 Cover Art")]
+      PREFIX --> LOOKUP
+      DECODERS@{ shape: procs, label: "4× Decoder Engines" }
+      LOOKUP -- "profile match" --> DECODERS
+  end
+
+  FOUND -- "No → raw decode" --> RAW
+
+  %% ── EXIF and output ──
+  EXIF[EXIF Orientation Parse<br>Tag 0x0112]
+  STB --> EXIF
+  DECODERS --> EXIF
+
+  OUTPUT(["BGRA Buffer + IGImageInfo<br>→ ImageGlass"])
+  EXIF -- "pixels + orientation" --> OUTPUT
