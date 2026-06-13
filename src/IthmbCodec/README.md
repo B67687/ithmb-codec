@@ -1,6 +1,6 @@
 # ITHMB Codec for ImageGlass v10
 
-A Native AOT C# codec plugin for [ImageGlass v10](https://imageglass.org) that opens Apple `.ithmb` thumbnail-cache files. Primarily works by locating embedded JPEG payloads inside `.ithmb` files and decoding them via StbImageSharp. Also includes SIMD-accelerated decoders (SSE2/SSSE3/Vector128) for 29 raw-format profiles covering iPod Photo through iPhone 2G.
+A Native AOT C# codec plugin for [ImageGlass v10](https://imageglass.org) that opens Apple `.ithmb` thumbnail-cache files. Primarily works by locating embedded JPEG payloads inside `.ithmb` files and decoding them via StbImageSharp. Also includes SIMD-accelerated decoders (SSE2/SSSE3/Vector128) for 47 raw-format profiles (22 photo + 25 cover art) covering iPod Photo through iPhone 2G. A standalone CLI decoder is available at `tools/IthmbDecoder/`.
 
 Tested with **956 T####.ithmb files** from an iPhone 5 (iOS 7) iPod Photo Cache --- **100% extraction rate**.
 
@@ -135,9 +135,10 @@ ig_plugin_get_api() -> IGPluginApi -> GetCodec() -> IGCodecApi
 
 | File                           | Description                                                                                                                      |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| `IthmbCodecPlugin.cs`          | Plugin ABI, init, JPEG pipeline, EXIF parsing, JSON profile loader (~887 lines)                                                  |
-| `IthmbCodecPlugin.Decoding.cs` | Decode algorithms + SIMD (SSE2/SSSE3/Vector128) for RGB565, RGB555, UYVY, YCbCr420 (~605 lines)                                  |
-| `IthmbCodecPlugin.Encoding.cs` | Synthetic encoder for all 5 raw formats — generates valid F-prefix .ithmb files for roundtrip testing                            |
+| `IthmbCodecPlugin.cs`          | Plugin ABI, init, JPEG pipeline, EXIF parsing, JSON profile loader (~931 lines)                                                  |
+| `IthmbCodecPlugin.Decoding.cs` | Decode algorithms + SIMD (SSE2/SSSE3/Vector128) for RGB565, RGB555, UYVY, YCbCr420 (~613 lines)                                  |
+| `IthmbCodecPlugin.Encoding.cs` | Synthetic encoder for all 5 raw formats — generates valid F-prefix .ithmb files for roundtrip testing (~280 lines)               |
+| `tools/IthmbDecoder/`          | Standalone CLI decoder — decodes .ithmb files through the plugin pipeline and writes BMP output                                  |
 | `IthmbCodec.csproj`            | .NET 10 Native AOT project targeting `win-x64`, `win-arm64`, `linux-x64`, `osx-arm64`                                            |
 | `igplugin.json`                | Plugin manifest consumed by ImageGlass on startup                                                                                |
 | `profiles.json`                | External profile definitions (sidecar, merged on first decode, overridable without recompile)                                    |
