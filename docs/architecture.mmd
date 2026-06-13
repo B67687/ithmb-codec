@@ -1,0 +1,50 @@
+flowchart TB
+    subgraph PLUGIN["Plugin ABI Layer [UnmanagedCallersOnly]"]
+        direction TB
+        GETAPI["ig_plugin_get_api()"] --> GCANHANDLE["CodecCanHandleExtension"]
+        GCANHANDLE --> GHANDLE["CanHandleSignature"]
+        GETAPI --> DECODE["DecodeStaticRaster"]
+        GETAPI --> FREEBUF["FreePixelBuffer"]
+    end
+
+    subgraph PIPELINE["Decode Pipeline (DecodeInternal)"]
+        direction TB
+        REQUEST["Decode Request (filePath)"] --> SIZE["Size Guard (&lt; 100 MB)"]
+        SIZE --> PEEK["Peek 4 MB Header"]
+        PEEK --> JPEGSCAN["JPEG Scan (SIMD Span.IndexOf)"]
+        JPEGSCAN --> JFIFCHECK["JFIF/Exif within 512B?"]
+        JFIFCHECK -->|"Yes"| JPEGPATH["JPEG Path"]
+        JFIFCHECK -->|"No"| RAWPATH["Raw Path"]
+        JPEGPATH --> STB["StbImageSharp Decode"]
+        STB --> RGBABGRA["RGBA → BGRA Swap"]
+        RAWPATH --> PREFIX["Read 4-Byte BE Prefix"]
+        PREFIX --> PROFILEDB["Lookup in KnownProfiles[47]"]
+        PROFILEDB --> RAWDECODE["Dispatch to Raw Decoder"]
+        RAWDECODE --> EXIFPARSE["Read EXIF Orientation"]
+    end
+
+    subgraph RAW["Raw Decoders (6 engines)"]
+        direction TB
+        RGB565["RGB565 (SSE2, 8 px/iter)"]
+        RGB555["RGB555 (SSE2, 8 px/iter)"]
+        UYVY["UYVY (SSSE3+SSE2)"]
+        YCBCR["YCbCr 4:2:0 (Vector128 x64+ARM64)"]
+        CLCL["CLCL Nibble-Chroma (Scalar)"]
+    end
+
+    subgraph PROFILES["47 Profiles (29 Built-in + 18 External)"]
+        direction TB
+        PHOTO["22 Photo Profiles (1005–3011)"]
+        COVER["25 Cover Art Profiles (1010–3005)"]
+    end
+
+    subgraph OUTPUT["Output"]
+        direction TB
+        BUFFER["BGRA Pixel Buffer + IGImageInfo"]
+    end
+
+    RAWDECODE --> RAW
+    RAW --> BUFFER
+    JPEGPATH --> RGBABGRA --> EXIFPARSE --> BUFFER
+    BUFFER --> DECODE
+    PROFILEDB --> PROFILES
