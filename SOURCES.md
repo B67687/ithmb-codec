@@ -70,6 +70,5 @@ Our codec correctly rejects it (`DecodeFailed`).
 
 These files are hosted on personal web servers and university user directories.
 They contain possibly personal photographs. **Do not redistribute the .ithmb files
-themselves.** Use the scripts in `scripts/` to download directly from the original
-sources if you need them for testing. The synthetic encoder (`IthmbEncoder.cs`)
+themselves.** The synthetic encoder (`IthmbEncoder.cs`)
 generates test files without any privacy concerns.
