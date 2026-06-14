@@ -10,7 +10,7 @@ The plugin was developed through an iterative research-and-review pipeline, comp
 
 3. **Implementation** — C# Native AOT plugin with 5 decoders (RGB565, RGB555, UYVY, YCbCr420, CLCL) and SIMD acceleration (SSE2, SSSE3, Vector128 for x64 + ARM64 NEON). Standalone CLI decoder at `tools/IthmbDecoder/`.
 
-4. **Testing** — 329 unit tests covering roundtrip (65,536 RGB565 + 32,768 RGB555 values), fuzz (250 random inputs across 5 engines), SIMD identity (10 tests), YUV tolerance, EXIF parsing, JSON profile loading, and speculative decoder paths (CL, CLCL, rotation, swapped chroma).
+4. **Testing** — See current test count and coverage breakdown in [README.md](README.md#testing--validation). Tests cover roundtrip (65,536 RGB565 + 32,768 RGB555 values), fuzz (250 random inputs across 5 engines), SIMD identity, YUV tolerance, EXIF parsing, JSON profile loading, and speculative decoder paths.
 
 5. **Review cycles** — 4 rounds of multi-agent review. ~42 findings fixed covering memory safety, threading, ABI compatibility, SIMD correctness, and defense-in-depth hardening.
 
