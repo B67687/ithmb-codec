@@ -1,0 +1,15 @@
+# Known-broken links (documented in ACKNOWLEDGMENTS.md):
+# FAU.edu — files return 404, directory listing live
+https://home.fau.edu/schilitj/web/iPod%20Photo%20Cache/
+
+# vhromanov.com — domain expired
+https://vhromanov.com/
+
+# mybroadband.co.za — blocks automated requests (WAF)
+https://mybroadband.co.za/
+
+# XnView attachment — deleted from forum
+https://newsgroup.xnview.com/download/file.php
+
+# dotnet.microsoft.com/download — CDN blocks automated requests
+https://dotnet.microsoft.com/download
