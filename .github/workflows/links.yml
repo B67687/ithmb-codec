@@ -13,4 +13,4 @@ jobs:
       - uses: lycheeverse/lychee-action@v2
         with:
           fail: true
-          args: --verbose --no-progress '**/*.md' '**/*.html'
+          args: --verbose --no-progress --exclude-file .lycheeignore '**/*.md' '**/*.html'

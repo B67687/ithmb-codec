@@ -40,10 +40,12 @@ stage links "Broken link check via lychee (if installed)" \
 run_editor() {
   echo "--- Editor layer: dotnet format ---"
   if [ "${FIX:-}" = "true" ]; then
-    dotnet format 2>/dev/null
-    echo "PASS (auto-fix applied)"
+    dotnet format && echo "PASS (auto-fix applied)" || {
+      echo "FAIL"
+      return 1
+    }
   else
-    dotnet format --verify-no-changes 2>/dev/null && echo "PASS" || {
+    dotnet format --verify-no-changes && echo "PASS" || {
       echo "FAIL — run 'bash review.sh --fix' to auto-fix"
       return 1
     }
@@ -77,8 +79,7 @@ run_commitlint() {
 
 run_test() {
   echo "--- Test layer: dotnet test -c Release ---"
-  dotnet test src/IthmbCodec/test/IthmbCodec.Tests.csproj -c Release --verbosity normal 2>&1 |
-    tail -3 && echo "PASS" || {
+  dotnet test src/IthmbCodec/test/IthmbCodec.Tests.csproj -c Release --verbosity normal && echo "PASS" || {
     echo "FAIL"
     return 1
   }
@@ -87,8 +88,10 @@ run_test() {
 run_ocr() {
   echo "--- LLM review (OCR) ---"
   if command -v ocr &>/dev/null; then
-    ocr review --from main --to HEAD --audience agent --format text 2>&1 || true
-    echo "PASS (review generated)"
+    ocr review --from main --to HEAD --audience agent --format text 2>&1 && echo "PASS (review generated)" || {
+      echo "FAIL"
+      return 1
+    }
   else
     echo "SKIP (ocr CLI not installed)"
   fi
@@ -97,9 +100,12 @@ run_ocr() {
 run_codeql() {
   echo "--- CodeQL security ---"
   if command -v codeql &>/dev/null; then
-    echo "Run: codeql database create --language=csharp --source-root=. src/IthmbCodec"
-    echo "      codeql database analyze --format=sarif-latest --output=results.sarif"
-    echo "PASS (instructions printed)"
+    codeql database create --language=csharp --source-root=. --overwrite /tmp/ithmb-codeql 2>&1 &&
+      codeql database analyze /tmp/ithmb-codeql --format=sarif-latest --output=/tmp/ithmb-results.sarif 2>&1 &&
+      echo "PASS" || {
+      echo "FAIL"
+      return 1
+    }
   else
     echo "SKIP (codeql CLI not installed)"
   fi
