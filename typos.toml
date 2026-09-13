@@ -4,7 +4,18 @@
 # "PNG" file format — typos sees "PNG" and thinks "PN" should be "ON"
 PNG = "PNG"
 png = "png"
+PNGs = "PNGs"
+pngs = "pngs"
 # "iy" is a loop variable (ix, iy pattern) — not a typo
 iy = "iy"
 # "ba" is a short variable name for byte array — not a typo
+ba = "ba"
+
+[default.extend-identifiers]
+# same PNG / ba / iy false positives on identifiers (substring checks)
+PNG = "PNG"
+png = "png"
+PNGs = "PNGs"
+pngs = "pngs"
+iy = "iy"
 ba = "ba"

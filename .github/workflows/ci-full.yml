@@ -6,10 +6,12 @@ name: ci-full
 on:
   push:
     branches: [main]
-    paths-ignore: # doc-only pushes skip the EXPENSIVE suite (pr-checks still
-      # runs: it owns typos + lychee, i.e. it lints the docs themselves).
+    paths-ignore: # doc-only / lint-config-only pushes skip the EXPENSIVE suite
+      # (pr-checks still runs: it owns typos + lychee, i.e. it lints the docs themselves).
       - "docs/**"
       - "*.md"
+      - "typos.toml"
+      - ".typos.toml"
 permissions: { contents: read }
 env:
   # setup-rust-toolchain injects RUSTFLAGS=-D warnings when the var is UNSET
@@ -44,6 +46,8 @@ jobs:
             echo "rust=false" >> "$GITHUB_OUTPUT"
           fi
   build:
+    needs: [changes]
+    if: needs.changes.outputs.rust == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -141,6 +145,8 @@ jobs:
           retention-days: 14
 
   build_c_api:
+    needs: [changes]
+    if: needs.changes.outputs.rust == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -160,6 +166,8 @@ jobs:
         run: cargo nextest run -p ithmb-core --features c --test c_api_test
 
   wasm:
+    needs: [changes]
+    if: needs.changes.outputs.rust == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

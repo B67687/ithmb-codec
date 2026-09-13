@@ -39,7 +39,7 @@ jobs:
           cache: true
           cache-key: "verify-${{ hashFiles('rust-toolchain.toml') }}-${{ hashFiles('**/Cargo.lock') }}"
       - name: cargo clippy
-        run: cargo clippy --workspace --all-targets
+        run: cargo clippy --workspace --all-targets --all-features
 
   typos:
     runs-on: ubuntu-latest
@@ -140,3 +140,16 @@ jobs:
         run: |
           cargo install cargo-machete --version 0.9.2 --locked 2>&1 | tail -3
           cargo machete
+  semver_checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true # warn gate per ADR-0011 — watches crates.io ithmb-core API breakage
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659 # v1
+        with:
+          cache: true
+      - name: cargo semver-checks
+        run: |
+          cargo install cargo-semver-checks --version 0.44.0 --locked 2>&1 | tail -3
+          cargo semver-checks --package ithmb-core --only-explicit-features
