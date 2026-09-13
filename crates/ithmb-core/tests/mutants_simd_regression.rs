@@ -30,6 +30,7 @@
     clippy::borrow_interior_mutable_const,
     clippy::declare_interior_mutable_const,
     clippy::needless_range_loop,
+    unused_crate_dependencies,
     reason = "strict migration"
 )]
 

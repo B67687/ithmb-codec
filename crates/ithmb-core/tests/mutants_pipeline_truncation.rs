@@ -19,6 +19,7 @@
     clippy::useless_vec,
     dead_code,
     clippy::needless_range_loop,
+    unused_crate_dependencies,
     reason = "strict migration"
 )]
 
