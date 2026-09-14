@@ -16,6 +16,39 @@ env:
   RUSTFLAGS: ""
 
 jobs:
+  # Rust-API gate: semver_checks only runs when crates/ithmb-core/** changed.
+  # Docs/config-only pushes skip it (queued time ~0). PRs touching rust_api
+  # and pushes to main touching rust_api still run it. Pattern mirrors
+  # ci-full.yml `changes` job (before/sha for push, base...HEAD for PR).
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      rust_api: ${{ steps.diff.outputs.rust_api }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - id: diff
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="origin/${{ github.base_ref }}...HEAD"
+            if git diff --name-only "$base" -- 'crates/ithmb-core/**' | grep -q .; then
+              echo "rust_api=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "rust_api=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            before="${{ github.event.before }}";
+            if [[ "$before" =~ ^0+$ ]]; then
+              echo "rust_api=true" >> "$GITHUB_OUTPUT"
+            elif git diff --name-only "$before" "${{ github.sha }}" -- 'crates/ithmb-core/**' | grep -q .; then
+              echo "rust_api=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "rust_api=false" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
   format_check:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -141,6 +174,8 @@ jobs:
           cargo install cargo-machete --version 0.9.2 --locked 2>&1 | tail -3
           cargo machete
   semver_checks:
+    needs: [changes]
+    if: needs.changes.outputs.rust_api == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     continue-on-error: true # warn gate per ADR-0011 — watches crates.io ithmb-core API breakage
@@ -150,6 +185,16 @@ jobs:
         with:
           cache: true
       - name: cargo semver-checks
+        shell: bash
         run: |
-          cargo install cargo-semver-checks --version 0.44.0 --locked 2>&1 | tail -3
-          cargo semver-checks --package ithmb-core --only-explicit-features
+          # Pinned prebuilt gnu binary (see ADR-0008); no `cargo install` (~8min
+          # compile on every cold run). SHA256 verified before extract. Tarball
+          # has no top-level dir, so extract into a dedicated dir (cf. typos).
+          # SHA computed 2026-09-14 via local curl+sha256sum; no .sha256 published
+          # upstream for v0.44.0, so hardcoded here per ADR-0008 pin policy.
+          curl -sSL https://github.com/obi1kenobi/cargo-semver-checks/releases/download/v0.44.0/cargo-semver-checks-x86_64-unknown-linux-gnu.tar.gz -o /tmp/semver.tgz
+          echo "17b228618dbb36bbe51db9090d710566101b278fb221c46b2b85b654f5b0d2a1  /tmp/semver.tgz" | sha256sum -c -
+          mkdir -p /tmp/semver-bin
+          tar xzf /tmp/semver.tgz -C /tmp/semver-bin
+          chmod +x /tmp/semver-bin/cargo-semver-checks
+          /tmp/semver-bin/cargo-semver-checks --package ithmb-core --only-explicit-features
