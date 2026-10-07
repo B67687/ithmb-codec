@@ -361,7 +361,7 @@ The `ithmb-core-cabi` crate (now in its [own repository](https://github.com/B676
 
 ## PyO3 — Rust ↔ Python Bridge
 
-**PyO3** is a Rust library that makes it easy to write Python modules in Rust. Our `pymod/` crate uses PyO3 to expose three functions to Python: `decode()`, `open_ithmb()`, and `list_profiles()`. Users can `pip install ithmb-python` and use it from Python scripts.
+**PyO3** is a Rust library that makes it easy to write Python modules in Rust. Our `pymod/` crate uses PyO3 to expose three functions to Python: `decode()`, `open_ithmb()`, and `list_profiles()`. Users can `pip install ithmb-codec` and use it from Python scripts.
 
 ## cdylib — C Dynamic Library
 

@@ -33,8 +33,7 @@ wheels = [
 ]
 
 [[package]]
-name = "ithmb-python"
-version = "1.9.10"
+name = "ithmb-codec"
 source = { editable = "." }
 
 [package.dev-dependencies]

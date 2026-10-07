@@ -104,7 +104,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: ithmb-python-${{ matrix.target }}
+          name: ithmb-codec-${{ matrix.target }}
           path: target/wheels/*.whl
           if-no-files-found: error
   release:
@@ -137,8 +137,8 @@ jobs:
           - macOS ARM64 (Apple Silicon)
           - Windows x86_64
 
-          Plus **Python wheels** for all platforms — manual install (not on PyPI):
-          download the `.whl` for your platform below and run `pip install <file>.whl`.
+          Plus **Python wheels** for all platforms — trial builds on TestPyPI (`pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ ithmb-codec`);
+          stable releases will be on PyPI as `ithmb-codec`.
 
           All binaries are built with SIMD acceleration enabled.
 

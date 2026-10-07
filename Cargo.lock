@@ -658,6 +658,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "ithmb-codec"
+version = "1.9.10"
+dependencies = [
+ "ithmb-core",
+ "pyo3",
+]
+
+[[package]]
 name = "ithmb-core"
 version = "1.9.10"
 dependencies = [
@@ -676,14 +684,6 @@ version = "1.9.10"
 dependencies = [
  "clap",
  "ithmb-core",
-]
-
-[[package]]
-name = "ithmb-python"
-version = "1.9.10"
-dependencies = [
- "ithmb-core",
- "pyo3",
 ]
 
 [[package]]

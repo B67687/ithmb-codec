@@ -47,7 +47,7 @@ The current WASM page at ithmb-codec-dev supports drag-drop decode to PNG. Ship 
 
 ### Python bindings published to PyPI
 
-The PyO3 bindings in `pymod/` work but are only buildable from source. Publish `ithmb-python` to PyPI with abi3-py312 stable ABI wheels for Linux x64/ARM64, macOS x64/ARM64, and Windows x64. Build via `maturin build --release` in CI and publish on version tags. Includes a README on PyPI with basic usage examples.
+The PyO3 bindings in `pymod/` work but are only buildable from source. Publish `ithmb-codec` to PyPI with abi3-py312 stable ABI wheels for Linux x64/ARM64, macOS x64/ARM64, and Windows x64. Build via `maturin build --release` in CI and publish on version tags. Includes a README on PyPI with basic usage examples.
 
 ### Automated crates.io / PyPI publishing on version tags
 

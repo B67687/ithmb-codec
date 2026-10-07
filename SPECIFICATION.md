@@ -426,7 +426,7 @@ Acceptance criteria in EARS notation. These are the gates that CI enforces on ev
 ### Entry Points
 - ithmb CLI binary: decode, inspect, and extract .ithmb files (end users, scripts)
 - ithmb-core library API: decode_ithmb / open_ithmb / decode_with_profile (Rust developers)
-- ithmb-python module: decode_ithmb / open_ithmb / list_profiles (Python developers)
+- ithmb-codec module: decode_ithmb / open_ithmb / list_profiles (Python developers)
 - ithmb-wasm: decode functions callable from JavaScript (browser web apps)
 - C ABI: ithmb_decode / ithmb_prefix_to_profile (any language with C FFI)
 - ithmb-gen: synthetic sample generator (developers and testers)

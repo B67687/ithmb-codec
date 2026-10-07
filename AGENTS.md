@@ -26,7 +26,7 @@ ithmb-codec/
 │   ├── ithmb-cli/        # CLI binary (cargo install ithmb-cli)
 │   ├── ithmb-gen/        # Synthetic sample generator binary
 │   └── ithmb-wasm/       # WASM target (wasm-pack), consumed by ithmb-codec-web
-├── pymod/                # Python bindings (PyO3/maturin), crate name ithmb-python
+├── pymod/                # Python bindings (PyO3/maturin), crate name ithmb-codec
 ├── fuzz/                 # libfuzzer targets (6 targets, nightly pinned in fuzz/rust-toolchain.toml)
 ├── scripts/
 │   ├── local-ci.sh       # Full Linux-runnable CI set (fmt, clippy, tests, builds, deny, audit, C-API)

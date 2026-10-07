@@ -8,8 +8,7 @@ import ithmb_core
 
 
 def test_list_profiles():
-    """list_profiles() returns all known profiles with expected keys."""
-    """list_profiles() returns 54 entries with expected keys."""
+    """list_profiles() returns all 53 built-in profiles with expected keys."""
     profiles = ithmb_core.list_profiles()
     assert len(profiles) >= 53, f"expected >=53 profiles, got {len(profiles)}"
     for p in profiles:

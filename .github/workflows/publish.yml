@@ -1,0 +1,163 @@
+# publish.yml — PUBLIC release: build all wheels + sdist and publish to real PyPI
+# on v* tags, then verify a clean-venv install. This filename is LOAD-BEARING:
+# the real-PyPI pending publisher binds owner/repo/workflow-file exactly
+# (B67687/ithmb-codec, publish.yml). Do NOT rename without updating PyPI.
+# Runs ONLY in the public repo (tags are cut there); the dev trial equivalent
+# is test-publish.yml (TestPyPI, every dev push).
+name: publish
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Audit (zero tokens, rename)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Zero-tokens audit (OIDC only)
+        run: |
+          # Match real secret material only (PyPI token format pypi-..., credential URLs,
+          # twine/poetry password settings) — prose about token-free OIDC must NOT match.
+          # NOTE: --include MUST precede --exclude (grep last-match-wins); plus pipe-filter
+          # for files whose own source text contains the patterns (self-match by
+          # construction — both are PR-reviewed, never scanned for themselves).
+          if grep -rEn 'pypi-[A-Za-z0-9_\-]{20,}|__token__@|//[^ /]*:[^ /]*@pypi\.org|TWINE_(PASSWORD|USERNAME)[[:space:]]*=|POETRY_PYPI_TOKEN' . \
+            --include='*.yml' --include='*.toml' --include='*.cfg' --include='*.ini' --include='*.env' \
+            --exclude-dir=.git --exclude-dir=target --exclude-dir=.venv --exclude=uv.lock \
+            | grep -v -e 'publish\.yml' -e 'test-publish\.yml' -e 'verify-pypi-trial\.sh'; then
+            echo 'FAIL: PyPI secret material found — OIDC trusted publishing only'
+            exit 1
+          fi
+          echo 'ok: no PyPI secret material'
+      - name: Rename audit (no ithmb-python outside flagged history)
+        run: |
+          # Flagged historical records — do NOT rewrite history:
+          #   docs/EVOLUTION.md (release row), docs/adr/ (decision records),
+          #   docs/standards/STANDARDS.md (incident row).
+          if grep -rn 'ithmb-python' --include='*.toml' --include='*.md' --include='*.yml' . \
+            --exclude-dir=.git --exclude-dir=target --exclude-dir=.venv --exclude-dir=.omo \
+            --exclude-dir=docs --exclude=publish.yml --exclude=test-publish.yml; then
+            echo 'FAIL: live ithmb-python reference remains'
+            exit 1
+          fi
+          echo 'ok: rename complete outside flagged history'
+
+  build-wheels:
+    name: Build wheel (${{ matrix.target }})
+    needs: [audit]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-24.04-arm
+          - target: x86_64-apple-darwin
+            os: macos-15-intel
+          - target: aarch64-apple-darwin
+            os: macos-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659 # v1
+        with:
+          cache: true
+          cache-key: "pypi-${{ matrix.target }}-${{ hashFiles('rust-toolchain.toml') }}"
+          target: ${{ matrix.target }}
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Install maturin
+        run: pip install maturin==1.14.1
+      - name: Build wheel
+        run: maturin build --release --manifest-path pymod/Cargo.toml --target ${{ matrix.target }}
+      - name: Upload artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ithmb-codec-${{ matrix.target }}
+          path: target/wheels/*.whl
+          if-no-files-found: error
+
+  build-sdist:
+    name: Build sdist
+    needs: [audit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Install maturin
+        run: pip install maturin==1.14.1
+      - name: Build sdist
+        run: maturin sdist --manifest-path pymod/Cargo.toml
+      - name: Upload artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ithmb-codec-sdist
+          path: target/wheels/*.tar.gz
+          if-no-files-found: error
+
+  publish-pypi:
+    name: Publish to PyPI
+    needs: [build-wheels, build-sdist]
+    runs-on: ubuntu-latest
+    if: github.repository == 'B67687/ithmb-codec'
+    environment: pypi # manual approval gate — releases need a human nod
+    permissions:
+      id-token: write # OIDC trusted publishing only
+      contents: read
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          path: dist
+          pattern: ithmb-codec-*
+          merge-multiple: true
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # release/v1 as of 2026-07-28 (repo policy: SHA-pin actions)
+
+  verify-pypi:
+    name: Clean-venv install check
+    needs: [publish-pypi]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Install from PyPI into a clean venv and check version
+        run: |
+          # Real versions are unique per tag (no stamp needed): install the exact
+          # Cargo version and gate on it plus the 53-profile count.
+          CARGO_VER=$(grep '^version = ' Cargo.toml | head -1 | cut -d'"' -f2)
+          python -m venv /tmp/verify-venv
+          # PyPI's simple index lags the upload by ~1-2 min: poll until the
+          # exact version is visible (max ~5 min), then install it.
+          for i in $(seq 1 30); do
+            if /tmp/verify-venv/bin/pip index versions \
+              "ithmb-codec==$CARGO_VER" 2>/dev/null | grep -q "$CARGO_VER"; then
+              echo "version visible after ${i}x10s"; break
+            fi
+            sleep 10
+          done
+          /tmp/verify-venv/bin/pip install "ithmb-codec==$CARGO_VER"
+          /tmp/verify-venv/bin/python -c "
+          import ithmb_core
+          assert ithmb_core.__version__ == '$CARGO_VER', (
+              f'version mismatch: installed {ithmb_core.__version__} != Cargo $CARGO_VER')
+          assert len(ithmb_core.list_profiles()) == 53, 'expected 53 active profiles'
+          print(f'ok: ithmb-codec {ithmb_core.__version__} == Cargo, 53 profiles')
+          "

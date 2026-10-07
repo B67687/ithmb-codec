@@ -2,6 +2,17 @@
 
 Python bindings for [ithmb-codec](https://github.com/B67687/ithmb-codec), a pure Rust decoder for Apple `.ithmb` thumbnail cache files.
 
+## Install
+
+```bash
+pip install ithmb-codec
+```
+
+Trial builds from dev pushes are published to TestPyPI:
+
+```bash
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ ithmb-codec
+```
 ## Build
 
 ```bash
@@ -41,7 +52,7 @@ for p in profiles:
 
 - `decode_ithmb(data, canceled=None)` — Decode a single `.ithmb` file from bytes. Returns a dict with `width`, `height`, `data` (BGRA `bytes`), `format`, `rotation`.
 - `open_ithmb(data, canceled=None)` — Decode a PhotoDB/ArtworkDB container or bare `.ithmb`. Returns a list of dicts (same shape as `decode_ithmb`).
-- `list_profiles()` — List all 54 known decoding profiles.
+- `list_profiles()` — List all 53 built-in decoding profiles (54 raw format IDs, 1 disabled).
 
 ## Testing
 

@@ -40,7 +40,7 @@ The C# codec was excellent at its job — decoding `.ithmb` files inside ImageGl
 | --------------------- | ----------------------------- | --------------------------------- |
 | **crates.io library** | Not possible (Native AOT DLL) | `cargo add ithmb-core`            |
 | **Standalone CLI**    | Not possible                  | `cargo install ithmb-cli`         |
-| **Python bindings**   | Not possible                  | `pip install ithmb-python` (PyO3) |
+| **Python bindings**   | Not possible                  | `pip install ithmb-codec` (PyO3)  |
 | **Fuzz testing**      | No equivalent                 | `cargo fuzz` with libfuzzer       |
 | **Cross-platform**    | Windows-primary               | Linux/macOS/Windows native        |
 | **Ecosystem reach**   | ImageGlass only               | Any Rust/Python project           |
@@ -106,7 +106,7 @@ The Rust workspace grew to include:
 
 - **`ithmb-core`**: core library (published to crates.io)
 - **`ithmb-cli`**: standalone CLI with `--open`, `--info`, `--list-profiles`, `--frame`
-- **`ithmb-python`**: PyO3 bindings (abi3-py312)
+- **`ithmb-codec`**: PyO3 bindings (abi3-py312)
 - **`ithmb-gen`**: synthetic sample generator
 
 ### Phase 3: C ABI split

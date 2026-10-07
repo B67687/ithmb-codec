@@ -97,5 +97,5 @@ debug = true
 debug = true
 [profile.dev.package.ithmb-wasm]
 debug = true
-[profile.dev.package.ithmb-python]
+[profile.dev.package.ithmb-codec]
 debug = true

@@ -3,7 +3,7 @@
 //! Exposes three functions:
 //! - `decode_ithmb` — decode a single .ithmb file
 //! - `open_ithmb` — decode a `PhotoDB` container or bare .ithmb
-//! - `list_profiles` — list all 54 known profiles
+//! - `list_profiles` — list all 53 active profiles (54th raw entry, prefix 1044, disabled at load)
 
 extern crate ithmb_core as _;
 use std::sync::atomic::AtomicBool;
@@ -134,5 +134,6 @@ fn ithmb_core_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(decode_ithmb, m)?)?;
     m.add_function(wrap_pyfunction!(open_ithmb, m)?)?;
     m.add_function(wrap_pyfunction!(list_profiles, m)?)?;
+    m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     Ok(())
 }

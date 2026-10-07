@@ -80,7 +80,7 @@ cargo build --release
 ./target/release/ithmb --open PhotoDB
 
 # Or use from Python
-pip install ithmb-python  # requires Rust toolchain — or download wheel from GitHub Releases
+pip install ithmb-codec  # stable releases (PyPI); trial builds: pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ ithmb-codec  # prebuilt abi3 wheel, no Rust toolchain needed
 ```
 
 For detailed build instructions see [Build from source](#build-from-source).
@@ -189,7 +189,7 @@ The workspace produces four artifacts:
 | -------------- | ------------------------------------- | --------------------------------------------- |
 | `ithmb-core`   | `libithmb_core.rlib` (static library) | `cargo add ithmb-core` (crates.io)            |
 | `ithmb-cli`    | `ithmb` CLI binary                    | `cargo install ithmb-cli` (crates.io)         |
-| `ithmb-python` | `libithmb_python.{so,dylib,pyd}`      | `pip install ithmb-python` (PyPI via maturin) |
+| `ithmb-codec`  | `libithmb_codec.{so,dylib,pyd}`       | `pip install ithmb-codec` (PyPI via maturin)  |
 | `ithmb-gen`    | `ithmb-gen` sample generator binary   | `cargo install --path crates/ithmb-gen`       |
 
 A separate C ABI shared library for ImageGlass integration is maintained at [ImageGlass-Ithmb-Plugin](https://github.com/B67687/ImageGlass-Ithmb-Plugin).
@@ -333,7 +333,7 @@ ithmb --raw input.ithmb output.bin
 
 The C ABI library (`ithmb-core-cabi`) — a `cdylib` implementing the ImageGlass v10 native plugin ABI — is now maintained in its [own repository](https://github.com/B67687/ImageGlass-Ithmb-Plugin) to keep the plugin scope separate from the format codec. It enables integration into the ImageGlass image viewer **(Windows-only)** and provides FFI from any language with C FFI support.
 
-### ithmb-python (PyO3 bindings)
+### ithmb-codec (PyO3 bindings)
 
 A `cdylib` exposing ithmb-core to Python 3.12+ via PyO3 (abi3-py312). Built with `maturin build`.
 

@@ -50,7 +50,7 @@
 | --------------------------- | ---------------- | -------------------------------------------------- |
 | **`ithmb-core`** (Rust lib) | Rust projects    | `cargo add ithmb-core`                             |
 | **`ithmb-cli`** (CLI)       | End users        | `cargo install ithmb-cli` to decode `.ithmb` files |
-| **`ithmb-python`** (PyO3)   | Python devs      | `pip install ithmb-python` for ML/scraping         |
+| **`ithmb-codec`** (PyO3)    | Python devs      | `pip install ithmb-codec` for ML/scraping          |
 | **`ithmb-wasm`** (WASM)     | Browser/web      | Drag-drop demo page, WASM from any web app         |
 | **C API** (`--features c`)  | Any language     | Ruby `ffi`, Go `cgo`, Zig, etc. — no PyO3 needed   |
 | **ImageGlass plugin**       | ImageGlass users | Separate repo for `ig_plugin_get_api()`            |

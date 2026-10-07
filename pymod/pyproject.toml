@@ -3,17 +3,29 @@ requires = ["maturin>=1.7,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "ithmb-python"
+name = "ithmb-codec"
+dynamic = ["version"]
 requires-python = ">=3.12"
 classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Rust",
     "Topic :: Multimedia :: Graphics",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
 ]
 description = "Python bindings for Ithmb-Codec — decode Apple .ithmb thumbnail files"
 license = "MIT"
 authors = [{ name = "B67687" }]
 readme = "README.md"
 dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/B67687/ithmb-codec"
+Repository = "https://github.com/B67687/ithmb-codec"
+Documentation = "https://github.com/B67687/ithmb-codec/blob/main/pymod/README.md"
+"Bug Tracker" = "https://github.com/B67687/ithmb-codec/issues"
 
 [dependency-groups]
 dev = [

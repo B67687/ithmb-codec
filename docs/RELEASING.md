@@ -17,7 +17,7 @@ How to ship a new version of Ithmb-Codec. The dev/public dual-repo ritual lives 
 3. **Commit on dev** — `docs: changelog X.Y.Z + version bump — <summary>` (or `fix:`/`feat:` if the version commit rides real changes). Push `origin/main`.
 4. **Ship to public** — branch from `public/main`, cherry-pick the net commits (collapse split/revert pairs), verify `git diff --quiet <dev-head> <branch>` is empty, push `public <branch>:main`.
 5. **Tag on the PUBLIC repo** — `git tag vX.Y.Z` + push. The tag gates `release.yml` (GitHub Release + Python wheels). Do NOT skip this — untagged versions lose traceability (early 1.9.x versions shipped untagged once).
-6. **crates.io** — manual, out-of-band: `cargo publish -p ithmb-core` (and `-p ithmb-cli` if bumped). Verify the published version on crates.io. **Python wheels** are built by release.yml and attached to the GitHub Release as manual-install artifacts — there is no PyPI account, so `pip install <file>.whl`, never `pip install ithmb-python`.
+6. **crates.io** — manual, out-of-band: `cargo publish -p ithmb-core` (and `-p ithmb-cli` if bumped). Verify the published version on crates.io. **Python (`ithmb-codec`)** — published to PyPI (`pip install ithmb-codec`, https://pypi.org/project/ithmb-codec/): every dev push trial-publishes to TestPyPI via `test-publish.yml` (environment `testpypi`, no approval); public `v*` tags publish wheels + sdist to real PyPI via `publish.yml` after manual approval (environment `pypi`). OIDC trusted publishing only — no API tokens anywhere.
 7. **Web side** — if the decoder changed, `Ithmb-Codec-Web` gets its own version bump (1.4.x → next) with a changelog entry referencing the core change.
 
 ## Baseline refresh (benchmark)

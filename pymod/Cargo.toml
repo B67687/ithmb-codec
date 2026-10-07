@@ -1,12 +1,12 @@
 [package]
-name = "ithmb-python"
+name = "ithmb-codec"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 description = "Python bindings for Ithmb-Codec — decode Apple .ithmb thumbnail files"
 repository = "https://github.com/B67687/Ithmb-Codec"
 homepage = "https://github.com/B67687/Ithmb-Codec"
-documentation = "https://docs.rs/ithmb-python"
+documentation = "https://docs.rs/ithmb-codec"
 
 [lib]
 crate-type = ["cdylib"]
