@@ -49,7 +49,7 @@ if require_tool cargo-audit 'install: cargo install cargo-audit'; then
 fi
 
 if require_tool wasm-pack 'install: rustup target add wasm32-unknown-unknown && cargo install wasm-pack'; then
-  run cargo build -p ithmb-wasm --target wasm32-unknown-unknown
+  run wasm-pack build crates/ithmb-wasm --target web --release
 fi
 
 # C API: build the cdylib with the c feature and run its test (fast, local-runnable)

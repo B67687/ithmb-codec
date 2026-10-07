@@ -141,6 +141,8 @@ Closed the quality gap between the C# reference and Rust port through 11 dedicat
   | Rust v1.9.1 | 2026-07 | Quality parity (3 waves, 11 tasks) |
   | Rust v1.9.5 | 2026-08 | Security hardening (photodb infinite-loop guard + JPEG peak budget, CWE-835/400); renumbered from the deleted 1.10.x line; crates.io republish (core 1.9.5 / cli 1.9.4) + GitHub Release; wasm regenerated; web shipped as 1.4.16 |
   | Rust v1.9.6 | 2026-08 | F-prefix CLI (frame-count/extract-all), profile-parser DoS fix, hardening batch (fuzz ×3, proptest, alloc-contract), C# divergence fixes (Nano 7G cover art, RGB555 endianness, profile 1044 disabled → 53 active); crates.io core 1.9.6 / cli 1.9.5; GH Release v1.9.6; web 1.4.17 (progressive display + 1.9.6 wasm); pymod wheel fix (ithmb-python 1.9.6) |
+  | Rust v1.9.9 | 2026-08 | JPEG backend migrated from jpeg-decoder to zune-jpeg 0.5.15 (SIMD-accelerated, grayscale JPEGs fixed); CWE-400 oversized-frame guard preserved; fuzz lockfile regenerated; crates.io republish |
+  | Rust v1.9.10 | 2026-09 | SE retrofit (god-module splits, FR/NFR traceability, local CI parity, per-block SAFETY contracts); wasm regenerated (web 1.4.18) + plugin 1.1.4 |
 
 ---
 

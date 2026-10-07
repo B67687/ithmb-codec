@@ -570,7 +570,7 @@ Load handling: the 8 MB file size guard prevents OOM from pathological input;
 ### MACRO: Release Strategy
 
 ```
-Versioning scheme: Semantic Versioning (workspace version 1.9.10; crates share the workspace version)
+Versioning scheme: Semantic Versioning (workspace version 1.9.10; ithmb-core 1.9.10, ithmb-cli 1.9.5 (independent per docs/RELEASE_TRAIN.md:26))
 Release cadence: tag-based (v* tags trigger release.yml), milestone-driven
 Changelog: git-cliff generated from conventional commits (cliff.toml), committed as CHANGELOG.md
 ```

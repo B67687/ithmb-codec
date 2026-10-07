@@ -141,10 +141,8 @@ public  → https://github.com/B67687/ithmb-codec       (PUBLIC, shipped repo, F
 The browser decoder consumes this crate. Shipping a core change to the web:
 
 ```bash
-cd crates/ithmb-wasm
-cargo check -p ithmb-wasm --target wasm32-unknown-unknown
-wasm-pack build --target web --release
-cp pkg/ithmb_wasm_bg.wasm ../../../ithmb-codec-web/ithmb-decoder/ithmb_wasm_bg.wasm
+wasm-pack build crates/ithmb-wasm --target web --release
+cp crates/ithmb-wasm/pkg/ithmb_wasm_bg.wasm ../ithmb-codec-web/ithmb-decoder/ithmb_wasm_bg.wasm
 ```
 
 **Copy ONLY `ithmb_wasm_bg.wasm`**: the web repo's `ithmb_wasm.js` loader and `ithmb_wasm_bg.js` glue are hand-adapted and must not be replaced. A rebuild that adds a wasm import the glue doesn't define breaks the decoder at runtime; the web repo's `scripts/check-wasm-drift.sh` detects this. Do NOT add `console_error_panic_hook` (its `js_sys::Error` glue import breaks the loader), the decoder is panic-free by design.

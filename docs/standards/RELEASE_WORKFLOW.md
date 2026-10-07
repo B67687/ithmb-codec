@@ -37,7 +37,7 @@ billing block); the public repo runs the same workflows free. A red dev CI is
 6. **Fast-forward public:** `git push public <branch>:main` (web uses
    `squash-work:main`; Rust uses `public-ship:main`, then delete the branch).
 7. **Tag on public:** `git tag -s vX.Y.Z` + `git push public vX.Y.Z`.
-   Every shipped version gets a tag — untagged versions lose traceability.
+   codec+plugin tagged, web untagged per RELEASE_TRAIN §3.
 8. **Web deploys itself:** Cloudflare Pages auto-builds from the public repo's
    `main`. Verify the live site after shipping (version endpoint, core flows).
 

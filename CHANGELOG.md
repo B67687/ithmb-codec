@@ -677,7 +677,7 @@ Dispatch pattern for all NEON-enabled decoders: `Sse2.IsSupported` → SSE2, `Ad
 - Stale files removed: RESEARCH.md, SOURCES.md, ACADEMIC.md, src/README.md, .mmd files, decode-pipeline-test/
 - REVIEW_PLAN.md scrubbed from all commit history
 
-[Unreleased]: https://github.com/B67687/Ithmb-Codec/compare/v1.9.6...HEAD
+[Unreleased]: https://github.com/B67687/Ithmb-Codec/compare/v1.9.10...HEAD
 [1.9.6]: https://github.com/B67687/Ithmb-Codec/releases/tag/v1.9.6
 [1.9.5]: https://github.com/B67687/Ithmb-Codec/releases/tag/v1.9.5
 [1.9.4]: https://github.com/B67687/Ithmb-Codec/releases/tag/v1.9.4

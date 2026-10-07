@@ -185,4 +185,4 @@ jobs:
           curl -sSL https://github.com/rustwasm/wasm-pack/releases/download/v0.12.1/wasm-pack-v0.12.1-x86_64-unknown-linux-musl.tar.gz -o /tmp/wasm-pack.tgz
           tar xzf /tmp/wasm-pack.tgz -C /tmp --strip-components=1
       - name: Build wasm
-        run: /tmp/wasm-pack build crates/ithmb-wasm/
+        run: /tmp/wasm-pack build crates/ithmb-wasm --target web --release
