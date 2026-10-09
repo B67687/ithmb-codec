@@ -36,7 +36,7 @@ jobs:
             2>&1 | tee mutants.log
       - name: Upload mutants results
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: mutants-results-${{ matrix.shard }}
           path: |

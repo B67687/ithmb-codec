@@ -52,6 +52,7 @@ jobs:
     name: Build wheel (${{ matrix.target }})
     needs: [audit]
     runs-on: ${{ matrix.os }}
+    if: github.repository == 'B67687/ithmb-codec'
     timeout-minutes: 30
     strategy:
       matrix:
@@ -68,18 +69,18 @@ jobs:
             os: windows-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659 # v1
+      - uses: actions-rust-lang/setup-rust-toolchain@ecabd13d1c56bd1345c230e542e9144811ad706f # v2
         with:
           cache: true
           cache-key: "pypi-${{ matrix.target }}-${{ hashFiles('rust-toolchain.toml') }}"
           target: ${{ matrix.target }}
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: "3.12"
       - name: Install maturin
         run: pip install maturin==1.14.1
       - name: Build wheel
-        run: maturin build --release --manifest-path pymod/Cargo.toml --target ${{ matrix.target }}
+        run: maturin build --release --manifest-path pymod/Cargo.toml --target ${{ matrix.target }} -i python3.12 --locked --compatibility pypi
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
@@ -91,16 +92,27 @@ jobs:
     name: Build sdist
     needs: [audit]
     runs-on: ubuntu-latest
+    if: github.repository == 'B67687/ithmb-codec'
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: "3.12"
       - name: Install maturin
         run: pip install maturin==1.14.1
       - name: Build sdist
         run: maturin sdist --manifest-path pymod/Cargo.toml
+      - name: Assert sdist contains LICENSE
+        run: |
+          tmp=$(mktemp -d)
+          tar -xzf target/wheels/*.tar.gz -C "$tmp"
+          if ! find "$tmp" -maxdepth 2 -iname 'LICENSE*' | grep -q .; then
+            echo 'FAIL: sdist missing LICENSE'
+            exit 1
+          fi
+          echo 'ok: sdist contains LICENSE'
+          rm -rf "$tmp"
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
@@ -126,16 +138,17 @@ jobs:
           pattern: ithmb-codec-*
           merge-multiple: true
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # release/v1 as of 2026-07-28 (repo policy: SHA-pin actions)
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # release/v1 as of 2026-07-28 (repo policy: SHA-pin actions; v1.14.2 tag dereferences to this same commit)
 
   verify-pypi:
     name: Clean-venv install check
     needs: [publish-pypi]
     runs-on: ubuntu-latest
+    if: github.repository == 'B67687/ithmb-codec'
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: "3.12"
       - name: Install from PyPI into a clean venv and check version
@@ -144,16 +157,29 @@ jobs:
           # Cargo version and gate on it plus the 53-profile count.
           CARGO_VER=$(grep '^version = ' Cargo.toml | head -1 | cut -d'"' -f2)
           python -m venv /tmp/verify-venv
-          # PyPI's simple index lags the upload by ~1-2 min: poll until the
-          # exact version is visible (max ~5 min), then install it.
-          for i in $(seq 1 30); do
-            if /tmp/verify-venv/bin/pip index versions \
-              "ithmb-codec==$CARGO_VER" 2>/dev/null | grep -q "$CARGO_VER"; then
-              echo "version visible after ${i}x10s"; break
+          # PyPI's simple index lags the upload (usually ~1-2 min, occasionally more):
+          # poll until the exact version is visible (max ~10 min — index lag exceeded 5 min on 2026-10-07), then install it.
+          # curl on the simple index (~0.3s) instead of `pip index versions`
+          # (~5-8s pip startup per iteration) — same gate, ~10x faster polling.
+          VISIBLE=0
+          for i in $(seq 1 120); do
+            if curl -sSL https://pypi.org/simple/ithmb-codec/ | grep -q "ithmb_codec-$CARGO_VER"; then
+              echo "version visible after ${i}x5s"; VISIBLE=1; break
             fi
-            sleep 10
+            sleep 5
           done
-          /tmp/verify-venv/bin/pip install "ithmb-codec==$CARGO_VER"
+          if [ "$VISIBLE" != 1 ]; then echo 'FAIL: version never appeared on PyPI index'; exit 1; fi
+          # Same CDN-skew ride-out as the trial workflow: retry the install,
+          # loud FAIL after 6 tries.
+          INSTALLED=0
+          for attempt in $(seq 1 6); do
+            if /tmp/verify-venv/bin/pip install "ithmb-codec==$CARGO_VER"; then
+              INSTALLED=1; echo "installed on attempt $attempt"; break
+            fi
+            echo "install attempt $attempt failed (CDN skew?) — retrying in 30s"
+            sleep 30
+          done
+          if [ "$INSTALLED" != 1 ]; then echo 'FAIL: pip install failed 6x after index-visible'; exit 1; fi
           /tmp/verify-venv/bin/python -c "
           import ithmb_core
           assert ithmb_core.__version__ == '$CARGO_VER', (

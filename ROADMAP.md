@@ -5,7 +5,7 @@
 These items are already done but worth calling out so contributors don't propose them again:
 
 - **WASM decoder page**: Browser-based .ithmb decoder at [ithmb-codec-dev](https://github.com/B67687/ithmb-codec-dev) with drag-drop PNG rendering (shipped with the web release; the 1.10.x enterprise line was renumbered — see EVOLUTION.md).
-- **C ABI plugin split**: The ImageGlass plugin lives in its own repo ([ImageGlass-Ithmb-Plugin](https://github.com/B67687/ImageGlass-Ithmb-Plugin)) with independent versioning and CI (ADR-0002).
+- **C ABI plugin split**: The ImageGlass plugin lives in its own repo ([ImageGlass-Ithmb-Plugin](https://github.com/B67687/imageglass-ithmb-plugin)) with independent versioning and CI (ADR-0002).
 - **8 MB file size guard**: Systematic research-driven limit with 10x margin on the largest known frame (ADR-0005).
 - **Cross-platform SIMD dispatch**: SSE2/AVX2/NEON compiled with runtime `is_x86_feature_detected!` selection; scalar fallback always available (ADR-0001).
 - **Quarterly audit protocol**: Layered adversarial reviews every quarter with 4 parallel research agents (ADR-0004).
@@ -27,7 +27,7 @@ Currently, decode parameters (rotation, crop, channel swap, chroma ordering) are
 
 ### Full 54-profile benchmark coverage with CI regression detection
 
-The benchmark suite covers all 8 decoders but at a single resolution per format. Expand coverage to all 54 profiles at their native dimensions, and wire the results into the CI regression detector (currently at a 25% threshold). This catches performance regressions caused by changes to shared YUV conversion or SIMD dispatch.
+The benchmark suite covers all 8 decoders but at a single resolution per format. Expand coverage to all 54 raw format IDs (53 active) at their native dimensions, and wire the results into the CI regression detector (currently at a 25% threshold). This catches performance regressions caused by changes to shared YUV conversion or SIMD dispatch.
 
 ### ARM64 CI tests on native hardware
 
@@ -95,7 +95,7 @@ All `unsafe` blocks are confined to `simd/*.rs`. Miri covers 21 SSE2 tests with 
 
 ### Plug-in system for custom format handlers
 
-The 54 built-in profiles cover known iPod/iPhone formats, but new formats are discovered every few months. A plug-in system (trait-based, loadable at runtime via `dyn FormatHandler`) would let third parties write decoders for new formats without forking the core library. This is deferred because it requires stabilizing the internal decoder trait, which is still evolving.
+The 53 active profiles (54th raw entry, prefix 1044, disabled at load) cover known iPod/iPhone formats, but new formats are discovered every few months. A plug-in system (trait-based, loadable at runtime via `dyn FormatHandler`) would let third parties write decoders for new formats without forking the core library. This is deferred because it requires stabilizing the internal decoder trait, which is still evolving.
 
 ### GPU-accelerated decode via compute shaders
 

@@ -31,7 +31,7 @@ A profile is a set of settings that tells the decoder how to interpret a raw .it
 - An **encoding** — which pixel format to use (RGB565, RGB555, ReorderedRGB555, UYVY, YCbCr420, CLCL, or CL)
 - Various flags — things like whether the pixel data is packed or padded, whether channels are swapped, etc.
 
-There are 54 built-in profiles covering known iPod/iPhone devices from 2004 through 2016.
+There are 53 active profiles (54th raw entry, prefix 1044, disabled at load) covering known iPod/iPhone devices from 2004 through 2016.
 
 ## What's a Decoder?
 
@@ -66,7 +66,7 @@ The `ithmb` CLI tool is a standalone binary that doesn't need ImageGlass. Build 
 
 - `ithmb input.ithmb [output.png]` — decode a single .ithmb file to PNG (auto-detects format from extension)
 - `ithmb --info input.ithmb` — print metadata (size, prefix, profile, frame count)
-- `ithmb --list-profiles` — list all 54 known profiles in a formatted table
+- `ithmb --list-profiles` — list all 53 active profiles (54th raw entry, prefix 1044, disabled at load) in a formatted table
 - `ithmb --open input.ithmb` — open a PhotoDB/ArtworkDB container and extract all entries as numbered PNG files
 - `ithmb --frame N input.ithmb [output.png]` — extract a specific frame from a multi-frame file
 - `ithmb --raw input.ithmb [output.bin]` — output raw BGRA binary instead of PNG

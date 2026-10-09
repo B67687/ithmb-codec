@@ -19,7 +19,7 @@ all actions SHA-pinned (enforced by `check_ci_pins`).
 | format_check  | `cargo fmt --check --all`                                                                                                                                                                                                                                  |
 | verify_clippy | `cargo clippy --workspace --all-targets`                                                                                                                                                                                                                   |
 | typos         | typos-cli v1.42.3 prebuilt musl, scoped `./README.md ./AGENTS.md ./ARCHITECTURE.md ./crates/ ./docs/`                                                                                                                                                      |
-| check_links   | lychee v2, `README.md docs/` (excludes: buymeacoffee, home.fau.edu, imageglass.org, theiphonewiki.com, mybroadband, buy.stripe.com, mdsite.duckdns.org, forums.whirlpool.net.au, github.com/itsmichaelwest/classick, shnatsel.medium.com, hungrypoint.com) |
+| check_links   | lychee v2, `README.md docs/` (excludes: buymeacoffee, home.fau.edu, imageglass.org, theiphonewiki.com, mybroadband, buy.stripe.com, mdsite.duckdns.org, forums.whirlpool.net.au, github.com/itsmichaelwest/classick, shnatsel.medium.com, hungrypoint.com, web.archive.org — archive hosts are slow/flaky from CI runners, excluded 2026-10-07) |
 | verify_deny   | cargo-deny 0.20.2 prebuilt musl, `cargo-deny check`                                                                                                                                                                                                        |
 | cargo_audit   | cargo-audit v0.22.2 prebuilt gnu, `cargo-audit audit`                                                                                                                                                                                                      |
 | doc_check     | `cargo doc --no-deps --workspace` with `RUSTDOCFLAGS="-W warnings"`                                                                                                                                                                                        |
@@ -92,3 +92,10 @@ see TECH_DEBT QS-01), i18n gates (hook + local).
 - Codec: mutants manual-only; fuzz/bench confined to ci-full (push-main, not PRs).
 - Plugin: release job tag-gated; artifacts via upload-artifact, not releases.
 - Never `[skip ci]` to dodge a red gate — skips are for cost, not for hiding failure.
+
+## CI discipline rules (2026-10-07 — PyPI trial CI wars)
+
+ 1. Network-dependent checks never hard-gate on flaky hosts: retries + exclusions for known-slow endpoints; lychee, TestPyPI index poll, and benchmark regression are the current blocking jobs.
+2. Audits must be self-match-proof from birth: any grep-pattern file excludes its own path (own-file exclusion, not pipe-filters added after failures).
+3. Polls get a ceiling + loud fail: index-poll caps with VISIBLE flag and `exit 1` on timeout — never fail silently into a stale install.
+4. Every CI shell block longer than ~10 lines gets a local twin script (e.g. `scripts/verify-pypi-trial.sh`) so trial changes prove out before spending CI minutes.

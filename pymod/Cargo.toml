@@ -2,10 +2,10 @@
 name = "ithmb-codec"
 version.workspace = true
 edition.workspace = true
-license.workspace = true
-description = "Python bindings for Ithmb-Codec — decode Apple .ithmb thumbnail files"
-repository = "https://github.com/B67687/Ithmb-Codec"
-homepage = "https://github.com/B67687/Ithmb-Codec"
+license-file.workspace = true
+description = "Python bindings for ithmb-codec — decode Apple .ithmb thumbnail files"
+repository = "https://github.com/B67687/ithmb-codec"
+homepage = "https://github.com/B67687/ithmb-codec"
 documentation = "https://docs.rs/ithmb-codec"
 
 [lib]

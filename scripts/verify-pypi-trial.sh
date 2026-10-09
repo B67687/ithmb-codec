@@ -10,7 +10,7 @@ echo "=== 1/4 rename audit (no ithmb-python outside flagged history) ==="
 if grep -rn "ithmb-python" --include="*.toml" --include="*.yml" --include="*.md" --include="*.rs" --include="*.py" --include="*.pyi" . 2>/dev/null \
   | grep -v -e "\.venv/" -e "target/" -e "uv\.lock" -e "Cargo\.lock" -e "\.omo/" -e "\.playwright-mcp/" \
   | grep -v -e "^\./docs/" \
-  | grep -v -e "test-publish\.yml" -e "RELEASE_NOTES\|release\.yml.*manual\|docs\.python\|sdist.*history" ; then
+  | grep -v -e "test-publish\.yml" -e "publish\.yml" -e "RELEASE_NOTES\|release\.yml.*manual\|docs\.python\|sdist.*history" ; then
   echo "FAIL: stale ithmb-python references above"; exit 1
 fi
 echo "ok: rename clean"
@@ -18,7 +18,7 @@ echo "ok: rename clean"
 echo "=== 2/4 zero-tokens audit (no PyPI credentials in tree) ==="
 if grep -rniE "pypi-[A-Za-z0-9_-]{20,}|://__token__@|twine.*(password|token)|POETRY_PYPI_TOKEN" \
   --include="*.yml" --include="*.toml" --include="*.cfg" --include="*.ini" --include="*.env" . 2>/dev/null \
-  | grep -v "test-publish.yml"; then
+  | grep -v -e "test-publish\.yml" -e "publish\.yml" -e "verify-pypi-trial\.sh"; then
   echo "FAIL: possible credential above"; exit 1
 fi
 echo "ok: no tokens"

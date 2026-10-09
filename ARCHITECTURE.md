@@ -7,7 +7,8 @@
 │  │  crates/ithmb-core          [lib]                     │   │
 │  │  ───────────────────────                              │   │
 │  │  • 8 decoders (RGB565..JPEG)                         │   │
-│  │  • 54 built-in profiles                              │   │
+│  │  • 53 active profiles                                │   │
+│  │    (54th raw entry, prefix 1044, disabled at load)   │   │
 │  │  • PhotoDB/ArtworkDB parser                          │   │
 │  │  • 7 encoders                                        │   │
 │  │  • SIMD (SSE2/AVX2/NEON)                             │   │

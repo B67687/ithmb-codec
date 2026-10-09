@@ -118,7 +118,7 @@ Rules:
 - Run `./scripts/local-ci.sh` before pushing. The pre-commit hook is the floor; local-ci.sh is the full Linux-runnable set.
 - Fuzz is slow, opt in via `./scripts/local-ci.sh --fuzz`.
 - Miri is a **local pre-release gate** (GitHub-hosted runners block its jailed child, see ADR-0008); benchmark regression and the macOS/Windows legs stay on GitHub.
-- **Public CI is the gate.** The dev repo (`origin` = `ithmb-codec-dev`, PRIVATE) has its Actions blocked by the account's paid-minute billing state; the PUBLIC repo (`public` = `ithmb-codec`) runs the same workflows free. A red dev CI is cosmetic, check the public repo's runs.
+- **Dev CI works and is the gate for dev.** Both repos run the same workflows (verified 2026-10-07: dev Actions run green; the old 'billing-blocked' note was stale). Rule: dev absorbs ALL red CI — fix forward on dev until green; public only ever receives green, thematically-squashed history.
 - All Actions are SHA-pinned; `scripts/check-ci-pins.sh` (wired into pr-checks) fails on any future unpinned ref or install.
 - CI commit-message types allowed: `feat, fix, docs, refactor, test, chore, cleanup, perf` (not `ci`).
 
@@ -127,6 +127,15 @@ Rules:
 **Canonical standard: `docs/standards/RELEASE_WORKFLOW.md`**; this section is a summary, the standard is the source of truth.
 
 ```
+origin  → https://github.com/B67687/ithmb-codec-dev   (PRIVATE, editing repo, absorbs all red CI)
+public  → https://github.com/B67687/ithmb-codec       (PUBLIC, shipped repo, green squashes only)
+```
+
+- MANDATORY: load the `github-workflow` skill before ANY push to `public` (or any tag/release action). No exceptions — the skill owns the release loop.
+- All work lands on dev `main` → push `origin/main`; fix forward until CI is green.
+- Public ships: thematically squash the delta since the last public tip (one commit per logical unit), verify tree-identical, then push `public/main` — ONLY on explicit user go, ONLY when dev CI is green.
+- NEVER push fixup/WIP commits to public; NEVER push to public to 'check CI'.
+- Post-squash: local = origin = public at the same SHA; verify with `git rev-parse main origin/main public/main`.
 origin  → https://github.com/B67687/ithmb-codec-dev   (PRIVATE, editing repo, CI billing-blocked)
 public  → https://github.com/B67687/ithmb-codec       (PUBLIC, shipped repo, FREE CI)
 ```
@@ -173,7 +182,7 @@ Follow `docs/RELEASING.md`. In short: bump `Cargo.toml` (workspace) + CHANGELOG 
 ## Key Decisions
 
 - **SIMD compiled unconditionally**: SSE2/AVX2 for x64, NEON for ARM64 (runtime dispatch)
-- **C ABI plugin in separate repo**: [ImageGlass-Ithmb-Plugin](https://github.com/B67687/ImageGlass-Ithmb-Plugin)
+- **C ABI plugin in separate repo**: [ImageGlass-Ithmb-Plugin](https://github.com/B67687/imageglass-ithmb-plugin)
 - **53 built-in profiles**: embedded in binary, optionally overridable via external `profiles.json`
 - **File size guard**: 8 MB max (ADR-0005), covers all known real-world files with 10× margin
 - **`cache` / `metrics` are feature-gated**; `c` is a feature too (cdylib only when enabled)
