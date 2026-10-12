@@ -36,7 +36,7 @@ The entry point was ImageGlass — a C# app. Natural assumption: "C# plugins, C#
 
 | Seed question | Discovered requirement | Research source |
 |--------------|----------------------|----------------|
-| "What .ithmb files?" | 6 prefix variants, 7 pixel formats, 54+ profiles | Keith's iPod Photo Reader, iOpenPod, libgpod format surveys |
+| "What .ithmb files?" | 6 prefix variants, 7 pixel formats, 53 active profiles (54th raw entry, prefix 1044, disabled at load) | Keith's iPod Photo Reader, iOpenPod, libgpod format surveys |
 | "What language?" | Rust + C ABI (not C#) | ImageGlass `ig_plugin_get_api` C ABI requirement |
 | "What about CLI?" | Cross-platform decode/info/extract tool | Needed for validation without ImageGlass |
 | "What about Python?" | PyO3 bindings for research workflows | Community requested, enables scripting |

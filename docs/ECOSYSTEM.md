@@ -8,11 +8,11 @@ Beyond building a working codec, this project made several original contribution
 
 - **15 dimension discrepancies** across device profiles, including inverted Nano 5G/6G profiles, wrong Nano 3G formats, and iOS 1.x profile corrections from actual iPhone 2G (iOS 1.1.4) samples
 - **18 format IDs** identified that were not present in any single implementation's table
-- The consolidated cross-reference covers **54 unique format IDs** — the most complete public reference
+- The consolidated cross-reference covers **54 unique format IDs**, cross-checked against every public implementation in our survey (see ACKNOWLEDGMENTS.md)
 
 **Device-specific format tables** — All prior tools maintain a flat list of all known format IDs. This project mapped which formats each of **18 iPod/iPhone generations** actually requires for thumbnail display and cover art, enabling per-device profile selection for sync tools.
 
-**BGR15 iPhone channel ordering** — Confirmed via real iPod Classic 6G samples (Reuhno) that iPhone thumbnails use reversed channel order (`xBBBBBGGGGGRRRRR` instead of standard `xRRRRRGGGGGBBBBB`). Added `SwapRgbChannels` flag — the first decoder to distinguish iPhone pixel layout from iPod's.
+**BGR15 iPhone channel ordering** — Confirmed via real iPod Classic 6G samples (Reuhno) that iPhone thumbnails use reversed channel order (`xBBBBBGGGGGRRRRR` instead of standard `xRRRRRGGGGGBBBBB`). Added `SwapRgbChannels` flag — the first decoder in our 33-implementation survey to distinguish iPhone pixel layout from iPod's.
 
 **Speculative profile corrections** — The F1064 profile (320×240 YCbCr) circulated in community speculation for years. Cross-checked against every public implementation: none has it. Disabled with rationale. Also corrected CLCL nibble scaling from ×17 (original 2005 Whirlpool RE) to ×16, cross-validated against 2 independent implementations.
 

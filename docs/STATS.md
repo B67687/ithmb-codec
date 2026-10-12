@@ -8,7 +8,7 @@ Canonical numbers for the Ithmb-Codec Rust workspace. All other documentation sh
 |------|-------|
 | Decoders | 8 (RGB565, RGB555, ReorderedRGB555, UYVY, YCbCr420, CL, CLCL, JPEG) |
 | Encoders | 7 (same minus JPEG) |
-| Built-in profiles | 54 (plus 1 speculative disabled) |
+| Built-in profiles | 53 active profiles (54th raw entry, prefix 1044, disabled at load) |
 | Device profiles | 18 iPod/iPhone generations |
 | Max frame size | 830 KB (480×864 RGB565) |
 

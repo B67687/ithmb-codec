@@ -179,7 +179,7 @@ A profile is a recipe that tells the decoder how to interpret the pixel data. It
 - Byte length of the frame
 - Post-processing flags (swap RGB channels, interlace, crop, rotation)
 
-**Format IDs** are numbers like `1007`, `1019`, `1061` that Apple assigned to specific screen resolutions on specific iPod models. We have **54 known profiles** — the most complete public reference.
+**Format IDs** are numbers like `1007`, `1019`, `1061` that Apple assigned to specific screen resolutions on specific iPod models. We have **53 active profiles** (54 raw format IDs, 1 disabled), cross-checked against the iOpenPod, libgpod, and iPod Photo Reader format surveys.
 
 **Example**: Profile `1007` = 480×864 RGB565 (iPod Photo/Classic album art). Profile `1019` = interlaced UYVY 4:2:2 (iPod Classic 6G photo thumbnail).
 

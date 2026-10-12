@@ -5,7 +5,7 @@ build-backend = "maturin"
 [project]
 name = "ithmb-codec"
 dynamic = ["version"]
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
@@ -37,11 +37,11 @@ dev = [
 [tool.maturin]
 module-name = "ithmb_core"
 abi3 = true
-abi3-py312 = true
+abi3-py310 = true
 
 [tool.ruff]
 line-length = 100
-target-version = "py312"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "UP", "B", "SIM", "I"]
