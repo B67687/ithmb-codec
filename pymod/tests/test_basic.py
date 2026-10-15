@@ -85,3 +85,21 @@ def test_open_ithmb_empty():
     """open_ithmb with empty input raises an error."""
     with pytest.raises((ValueError, RuntimeError)):
         ithmb_core.open_ithmb(b"")
+
+
+def test_decode_pure_red_rgb565_is_bgra_red():
+    # Pure-red RGB565 fixture must decode to BGRA red bytes.
+    # Regression pin: ground truth DecodedImage.data is BGRA8, so pixel0
+    # of a pure-red image is BGRA [0, 0, 255, 255]. An R/B swap would
+    # yield [255, 0, 0, 255] and fail the explicit index asserts below.
+    prefix, width, height = 1009, 42, 30
+    buf = struct.pack(">i", prefix) + b"\x00\xf8" * (width * height)
+    result = ithmb_core.decode_ithmb(buf)
+    assert result["format"] == "BGRA"
+    data = result["data"]
+    assert len(data) == width * height * 4
+    assert data[0] == 0x00
+    assert data[1] == 0x00
+    assert data[2] == 0xFF
+    assert data[3] == 0xFF
+    assert data[0:4] == b"\x00\x00\xff\xff"

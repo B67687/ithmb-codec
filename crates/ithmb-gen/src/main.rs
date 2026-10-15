@@ -111,9 +111,9 @@ fn encode(format: Format, bgra: &[u8], w: u32, h: u32) -> Vec<u8> {
     let w_i32 = w as i32;
     let h_i32 = h as i32;
     match format {
-        Format::Rgb565 => ithmb_core::enc::encode_rgb565(bgra, w_i32, h_i32, true),
-        Format::Rgb555 => ithmb_core::enc::encode_rgb555(bgra, w_i32, h_i32, true, false),
-        Format::ReorderedRgb555 => ithmb_core::enc::encode_reordered_rgb555(bgra, w_i32, h_i32, true),
+        Format::Rgb565 => ithmb_core::enc::encode_rgb565(bgra, w_i32, h_i32, false),
+        Format::Rgb555 => ithmb_core::enc::encode_rgb555(bgra, w_i32, h_i32, false, false),
+        Format::ReorderedRgb555 => ithmb_core::enc::encode_reordered_rgb555(bgra, w_i32, h_i32, false),
         Format::Uyvy => ithmb_core::enc::encode_uyvy(bgra, w_i32, h_i32),
         Format::Ycbcr420 => ithmb_core::enc::encode_ycbcr420(bgra, w_i32, h_i32, false),
     }
@@ -214,4 +214,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Regression tests: channel order / byte order pins
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Pure-red RGB565 payload must read little-endian.
+    ///
+    /// Pure red packs to 0xF800, so LE bytes are [0x00, 0xF8]. With the
+    /// old `big_endian: true` bug the bytes came out [0xF8, 0x00], and
+    /// reading the first u16 via `from_le_bytes` returned 0x00F8 (blue-ish)
+    /// instead of 0xF800 — an R/B-family swap at the byte level.
+    #[test]
+    fn rgb565_pure_red_payload_is_little_endian() {
+        let bgra = [[0u8, 0, 255, 255]; 4].concat(); // 2x2 pure red (BGRA)
+        let payload = encode(Format::Rgb565, &bgra, 2, 2);
+        assert_eq!(payload.len(), 8, "2x2 RGB565 must be 8 bytes");
+        assert_eq!(&payload[0..2], &[0x00, 0xF8], "pure red must encode LE");
+        assert_eq!(
+            u16::from_le_bytes([payload[0], payload[1]]),
+            0xF800,
+            "first pixel must read as 0xF800 LE"
+        );
+    }
 }

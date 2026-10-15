@@ -180,7 +180,7 @@ fn decode_raw_bgra() {
 
     assert!(output.exists(), "raw output not created");
     let data = std::fs::read(&output).unwrap();
-    // 320×240 RGBA = 307,200 bytes
+    // 320×240 BGRA = 307,200 bytes
     assert_eq!(data.len(), 320 * 240 * 4, "raw BGRA has wrong size");
 }
 

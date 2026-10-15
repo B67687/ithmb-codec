@@ -75,3 +75,23 @@ fn decode_garbage_returns_none() {
     let garbage = [0xFFu8; 64];
     assert!(decode_ithmb(&garbage).is_none(), "garbage must not decode");
 }
+
+#[wasm_bindgen_test]
+fn decode_ithmb_pure_red_fixture_is_rgba_red() {
+    // Hand-built profile-1009 (42x30 RGB565, LE by default) file: every
+    // pixel is LE 0xF800 = pure red. Pins the WASM ABI layout
+    // [wLE][hLE][RGBA ...] with explicit indices — with an R/B swap,
+    // out[8] would be 0x00 and out[10] 0xFF.
+    let mut ithmb = 1009_u32.to_be_bytes().to_vec();
+    for _ in 0..42 * 30 {
+        ithmb.extend_from_slice(&[0x00, 0xF8]);
+    }
+    let out = decode_ithmb(&ithmb).expect("pure-red fixture should decode");
+    assert_eq!(u32::from_le_bytes([out[0], out[1], out[2], out[3]]), 42, "width");
+    assert_eq!(u32::from_le_bytes([out[4], out[5], out[6], out[7]]), 30, "height");
+    assert_eq!(out.len(), 8 + 42 * 30 * 4, "RGBA buffer length");
+    assert_eq!(out[8], 255, "R channel of pixel0 must be 255 (pure red)");
+    assert_eq!(out[9], 0, "G channel of pixel0 must be 0 (pure red)");
+    assert_eq!(out[10], 0, "B channel of pixel0 must be 0 (pure red)");
+    assert_eq!(out[11], 255, "A channel of pixel0 must be 255 (opaque)");
+}

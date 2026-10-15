@@ -299,7 +299,7 @@ Bit     15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
 **BPP:** 2 bytes per pixel
 **Used by:** iPod Touch formats (3001, 3002, 3003)
 
-This variant of RGB555 stores each 16-bit pixel in big-endian byte order AND rearranges pixel positions using a Morton Z-order curve. The decoder reads pixels from Z-order positions and writes them in row-major order.
+This variant of RGB555 stores each 16-bit pixel in little-endian byte order by default (big-endian only where the profile clears the `little_endian` flag) AND rearranges pixel positions using a Morton Z-order curve. The decoder reads pixels from Z-order positions and writes them in row-major order.
 
 **Pixel bit layout** (identical to standard RGB555 big-endian):
 

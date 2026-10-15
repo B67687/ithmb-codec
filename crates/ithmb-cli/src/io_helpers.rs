@@ -129,8 +129,13 @@ pub(super) fn write_png(img: &DecodedImage, path: &Path) -> Result<()> {
     encoder.set_color(png::ColorType::Rgba);
     encoder.set_depth(png::BitDepth::Eight);
     let mut writer = encoder.write_header().context("failed to write PNG header")?;
+    // DecodedImage.data is BGRA; PNG Rgba expects R,G,B,A order.
+    let mut rgba = Vec::with_capacity(img.data.len());
+    for px in img.data.chunks_exact(4) {
+        rgba.extend_from_slice(&[px[2], px[1], px[0], px[3]]);
+    }
     writer
-        .write_image_data(&img.data)
+        .write_image_data(&rgba)
         .context("failed to write PNG image data")?;
     Ok(())
 }
