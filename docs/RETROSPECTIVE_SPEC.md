@@ -420,11 +420,11 @@ steps:
 # release.yml — added Phase 8
 ```
 
-# Additional CI tools leveraged (Phase 1):
-# - typos (spell check) — cargo install typos-cli --locked --version 1.42.3, run on src/ docs/ README.md. MUST pin to version compatible with MSRV (latest may require newer rustc)
-# - cargo-udeps (unused deps) — nightly only, run weekly
-# - cargo-semver-checks (API breakage) — run on PRs that change public API
-# - git-cliff (changelog gen from conventional commits) — run at release time
+**Additional CI tools leveraged (Phase 1):**
+- typos (spell check) — cargo install typos-cli --locked --version 1.42.3, run on src/ docs/ README.md. MUST pin to version compatible with MSRV (latest may require newer rustc)
+- cargo-udeps (unused deps) — nightly only, run weekly
+- cargo-semver-checks (API breakage) — run on PRs that change public API
+- git-cliff (changelog gen from conventional commits) — run at release time
 
 #### 1f — AGENTS.md Structure
 > Spec: Repository Purpose → Structure → Decoder Pipeline Flow → Where to Look → Code Conventions → Test Patterns → What NOT to Do → Building → Key Decisions → Commands.
@@ -666,6 +666,6 @@ Every phase complies with these standards. Source URLs in the research phase doc
 | AI disclosure | CREDITS.md + DCO + [ai-assisted] annotation in PRs [F1] |
 | 80/20 data fill-in | Placeholders in templates, replaced when discovered |
 | One-shot archive | No filter-repo, no squashing after the fact |
-| CHANGELOG current | Updated per-commit (part of commit workflow) | Was retrospective batch update
-| Plan evolves with gaps | Plan Verification Loop after every plan change | Was missing — plan was treated as static
+| CHANGELOG current | Updated per-commit (part of commit workflow). Was: retrospective batch update |
+| Plan evolves with gaps | Plan Verification Loop after every plan change. Was: plan treated as static |
 

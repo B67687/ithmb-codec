@@ -62,7 +62,7 @@ The initial Rust port prioritized coverage over thoroughness. Comparing the two 
 | ADR documentation                                                                                                                                                                                                                                              | 3 decision records                       | 5 decision records ✅                     |
 | Cancellation tests                                                                                                                                                                                                                                             | Thread-safe polling                      | Barrier-sync + loop tests ✅              |
 | Profile validation                                                                                                                                                                                                                                             | —                                        | 53 profiles validated ✅                  |
-| This gap existed because the Rust code was written in fewer, faster cycles. The C# code had more review rounds applied to it. **After 3 waves of dedicated quality work, the Rust port has achieved full parity with the C# reference across all dimensions.** |
+> **Note:** This gap existed because the Rust code was written in fewer, faster cycles. The C# code had more review rounds applied to it. **After 3 waves of dedicated quality work, the Rust port has achieved full parity with the C# reference across all dimensions.**
 
 ---
 
@@ -134,6 +134,7 @@ Closed the quality gap between the C# reference and Rust port through 11 dedicat
 - Pre-commit hook optimization (~8s) ✅
 - WASM target + C API FFI + demo pages ✅
 - EVOLUTION.md with full migration story ✅
+| Release | Date | Highlights |
   |---------|------|-------|
   | C# v1.0–v1.6 | 2025 | Original C# development, 5 review rounds |
   | C# v1.9.0 | 2026-06 | Final C# release, repo archived |

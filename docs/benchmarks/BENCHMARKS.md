@@ -111,7 +111,7 @@ Divan reports mean and median (p50) decode latency per benchmark. For
 deeper statistical insight (p95, p99, stddev), the `perf-stats.py` tool
 captures and analyzes the full benchmark output.
 
-#### Methodology
+#### Methodology — Timing Aggregates
 
 Divan's default output shows four timing aggregates per benchmark:
 **fastest** (minimum per-iteration time), **slowest** (maximum),

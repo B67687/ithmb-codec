@@ -138,7 +138,6 @@ public  → https://github.com/B67687/ithmb-codec       (PUBLIC, shipped repo, g
 - Post-squash: local = origin = public at the same SHA; verify with `git rev-parse main origin/main public/main`.
 origin  → https://github.com/B67687/ithmb-codec-dev   (PRIVATE, editing repo, CI billing-blocked)
 public  → https://github.com/B67687/ithmb-codec       (PUBLIC, shipped repo, FREE CI)
-```
 
 - All work lands on dev `main` → push `origin/main`.
 - Public ships are built on a branch from `public/main`: cherry-pick the net commits (e.g. collapse a split/revert/re-apply trio into one clean commit), verify `git diff --quiet <dev-head> <public-branch>` is empty, then `git push public <branch>:main`.

@@ -90,7 +90,7 @@ pub fn uyvy_quad_to_bgra(quad: &[u8; 4]) -> [u8; 16] {
 | ------------------------------------ | ------------------- | -------------------------------- |
 | x86_64 (Linux, macOS Intel, Windows) | SSE2 guaranteed     | AVX2 -> SSE4.1 -> SSE2 -> scalar |
 | aarch64 (Linux ARM)                  | NEON guaranteed     | NEON -> scalar                   |
-|                                      | aarch64 (macOS ARM) | NEON guaranteed                  | NEON -> scalar |
+| aarch64 (macOS ARM)              | NEON guaranteed     | NEON -> scalar                   |
 | x86 (32-bit)                         | SSE2                | SSE2 -> scalar                   |
 | Other (RISC-V, etc.)                 | None                | scalar only                      |
 

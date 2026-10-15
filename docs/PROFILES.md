@@ -59,9 +59,9 @@ Additional profiles can be added at runtime via `profiles.json` without recompil
 | 3005    | 320×320    | RGB555           | iPod touch (cover art xlarge)                    |
 | 3006    | 56×56      | RGB555           | iPod touch (cover art, padded slot 8192)          |
 | 3007    | 88×88      | RGB555           | iPod touch (cover art, padded slot 16384)         |
-|| 1062    | 56×56      | RGB565           | Nano 5G SysInfoExtended (clickwheel) — no device profile by default
+| 1062 (disabled) | 56×56      | RGB565           | Nano 5G SysInfoExtended (clickwheel) — no device profile by default |
 | 3008    | 640×480    | RGB555           | iPhone 1G/2G, iPod Touch (full-screen)           |
-|| 3009    | 120×160    | RGB555           | iPhone 1G/2G, iPod Touch (photo prev, portrait, padded)
+| 3009 (disabled) | 120×160    | RGB555           | iPhone 1G/2G, iPod Touch (photo prev, portrait, padded)              |
 | 3011    | 80×79      | RGB555           | iPhone 1G/2G, iPod Touch (photo thumb)           |
 
 > **Note:** iOS 1.x firmware used slightly different dimensions for some iPhone format IDs (e.g., 3004=55×55, 3009=120×160, 3011=75×75 per Steee29/ithmb_converter). Our dimensions target iPhone 2G+ (per libgpod). If your iOS 1.x files fail to decode, try adjusting the dimensions via `profiles.json`.
@@ -88,7 +88,7 @@ These flags can be set in `profiles.json` for fine-tuning raw decoder behavior:
 | `cropY`            | int  | `0`     | Y offset of visible region within decoded frame (0 = no crop).                                                    |
 | `cropWidth`        | int  | `0`     | Width of visible region (0 = no crop, uses full frame width).                                                     |
 | `cropHeight`       | int  | `0`     | Height of visible region (0 = no crop, uses full frame height).                                                   |
-| `useMhniDimensions` | bool | `false` | When true, decode dimensions come from the MHNI chunk (format_id's Width/Height) instead of the profile's fixed Width/Height. Resolves real-world dimension disagreements between sources (e.g., 1061: libgpod=56×56, Reuhno=55×55).
-| `fallbackEncodings`  | array | `null` | Ordered list of alternative encodings to try when the primary encoding fails to decode. Each entry must match one of the known encoding strings (e.g. `["rgb555", "reorderedrgb555"]`). Used when the exact encoding for a format ID is uncertain between sources.
+| `useMhniDimensions` | bool | `false` | When true, decode dimensions come from the MHNI chunk (format_id's Width/Height) instead of the profile's fixed Width/Height. Resolves real-world dimension disagreements between sources (e.g., 1061: libgpod=56×56, Reuhno=55×55). |
+| `fallbackEncodings`  | array | `null` | Ordered list of alternative encodings to try when the primary encoding fails to decode. Each entry must match one of the known encoding strings (e.g. `["rgb555", "reorderedrgb555"]`). Used when the exact encoding for a format ID is uncertain between sources. |
 
 > **Speculative decoders:** The `isClcl`, `isCl`, and `swapChromaPlanes` flags are based on Keith Wiley's original 2005 reverse engineering (Methods 1–6). No other open-source ithmb implementation (iOpenPod, libgpod, andrewmalta/ithmb, etc.) independently confirms these byte layouts or chroma orderings. No known built-in profiles use them — they are safety nets for undocumented iPod variants. If you encounter a file that decodes with wrong colors, try toggling these flags via `profiles.json`.
