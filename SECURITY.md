@@ -12,7 +12,8 @@ This policy covers repos under the B67687 organization related to the Ithmb-Code
 
 If you discover a security issue in any of our projects — especially the Rust codec library (memory safety) — please report it privately:
 
-- **Email**: enterprise@ithmb-codec.dev
+- **GitHub Security Advisory** (preferred): https://github.com/B67687/ithmb-codec/security/advisories/new
+- **Web decoder project**: https://github.com/B67687/Ithmb-Codec-Web/security/advisories/new
 - **Response**: We aim to acknowledge within 48 hours and provide a fix timeline within 5 business days.
 
 ## Security Properties
