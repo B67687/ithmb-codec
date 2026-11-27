@@ -639,7 +639,7 @@ The encoder uses the same BT.601 forward-transform coefficients for YUV formats.
 
 ## 10. File Size Guard
 
-An 8 MB file size limit is enforced before any decoding begins. This prevents out-of-memory conditions from pathological or corrupt input. All known real `.ithmb` files are under 1 MB (maximum observed: 852 KB). The 8 MB limit provides ~10× margin over the largest known single frame (810 KB).
+An 8 MB file size limit is enforced before any decoding begins. This prevents out-of-memory conditions from pathological or corrupt input. In our sample survey, no real `.ithmb` file exceeded 1 MB (largest observed: 852 KB). The 8 MB limit provides ~10× margin over the largest frame in the profile database (810 KB).
 
 ---
 
@@ -647,7 +647,7 @@ An 8 MB file size limit is enforced before any decoding begins. This prevents ou
 
 The format specification is derived from the following open-source reverse-engineering projects:
 
-- *iOpenPod* (TheRealSavi) — 50+ empirically validated profiles across multiple iPod models
+- *iOpenPod* (TheRealSavi) — iOpenPod reports 50+ profiles validated on real hardware across multiple iPod models
 - *libgpod* (community) — PhotoDB/ArtworkDB chunk parser and format ID tables
 - *Keith's iPod Photo Reader* (kebwi) — Original 2005 reverse-engineering, 13 decode methods
 - *clickwheel* (dstaley) — C# ArtworkDB read/write, 40+ format IDs

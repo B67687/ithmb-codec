@@ -60,30 +60,30 @@ Ithmb-Codec Constitution:
 Project name: Ithmb-Codec
 One-line: Pure Rust codec library, CLI tool, and C ABI shared library for
   decoding and encoding Apple .ithmb thumbnail-cache files (iPod/iPhone PhotoDB).
-Core ambition: Decode every known .ithmb thumbnail file from iPod Photo 4G
-  through iPhone 2G and iPod Nano 7G with pixel-exact output, verified against
-  hardware samples and the C# reference implementation.
+Core ambition: Decode the .ithmb thumbnail formats used from iPod Photo 4G
+  through iPhone 2G and iPod Nano 7G with pixel-exact output, checked against
+  the C# reference implementation and the sample sets available to the project.
 Why now: The C# reference was trapped inside ImageGlass (Windows-only, no
   crates.io/PyPI distribution). Rust enables a library, CLI, Python bindings,
-  and WASM from one codebase, and the iOpenPod community provides hardware
-  validation that no single developer could assemble alone.
+  and WASM from one codebase, and the iOpenPod community reports hardware
+  validation for its profile set (see ACKNOWLEDGMENTS.md).
 
 Success criteria:
-- WHEN the full test suite runs THEN 570 unit tests across 17 suites pass
-  with zero failures (docs/STATS.md).
+- WHEN the full test suite runs THEN all tests pass (current counts are reported
+  by CI; test assets are listed in docs/STATS.md).
 - WHEN a known-profile .ithmb file is decoded THEN the output matches the
   C# reference golden vectors (14 golden test vectors pass).
-- WHEN fuzzing runs THEN 1.2M+ iterations complete with zero crashes and
-  zero Miri UB findings (3 libfuzzer targets, 21 Miri tests).
+- WHEN fuzzing runs THEN the libfuzzer targets complete their runs without
+  crashes, and Miri reports no undefined behavior in the paths it exercises.
 - WHEN a user runs the CLI on a 480x864 RGB565 frame THEN decode completes
   in under 100 ms on commodity hardware (measured 45 us at 720x480).
-- WHEN a real iPod Classic 6G sample is decoded THEN the BGR15 channel-swap
-  and MSB replication match the reference PNGs (F1061/F1055/F1060 validated).
+- WHEN the F1061/F1055/F1060 sample set is decoded THEN the BGR15 channel-swap
+  and MSB replication match the checked-in reference PNGs.
 
 Stakeholders: iPod/iPhone owners recovering photos, digital forensics
   practitioners, ImageGlass users (via the separate plugin repo), Python and
   ML pipeline developers, browser users (via the WASM decoder), the iOpenPod
-  reverse-engineering community, and the single maintainer B67687.
+  reverse-engineering community, and the single maintainer Nami.
 ```
 
 **MESO/MICRO:** The library crate, CLI, WASM bindings, Python bindings, and sample generator are in scope. The ImageGlass plugin is out of scope for this repo (separate repository, ADR-0002). No cloud dependencies, no accounts, no telemetry: the codec is fully offline and privacy-preserving.
@@ -111,7 +111,7 @@ Each architecture-level decision uses the Y-Statement format:
 
 ```
 ### Decision 1: Rust port over the C# Native AOT plugin
-In the context of a proven C# codec that was trapped inside the Windows-only
+In the context of a working C# codec that was trapped inside the Windows-only
 ImageGlass plugin ABI,
 facing the need to distribute the codec as a library, CLI, Python bindings,
 and WASM,
@@ -147,7 +147,8 @@ facing the need to run correctly on SSE2, AVX2, and NEON hardware without
 per-target builds,
 we decided for runtime `is_x86_feature_detected!` dispatch with a scalar
 fallback (ADR-0001),
-to achieve 2-5x throughput on YUV decoders while remaining correct everywhere,
+to achieve SIMD speedups without per-target builds while remaining correct
+everywhere,
 accepting that macOS ARM NEON is gated on CI runners and falls back to scalar
 (known edge case, documented in docs/standards/STANDARDS.md).
 
@@ -155,8 +156,8 @@ Alternatives considered:
 - Compile-time feature gating per target, rejected because it multiplies
   the CI matrix and breaks prebuilt binary distribution.
 - Hand-written SIMD for RGB565/RGB555, rejected after measurement: the
-  hand-written SSE2/AVX2 was 34x slower on Intel due to AVX frequency
-  downclock and port-5 bottleneck; auto-vectorized scalar loops win.
+  hand-written SSE2/AVX2 was slower than the scalar loop on Intel due to AVX
+  frequency downclock and port-5 bottleneck; auto-vectorized scalar loops win.
 
 ### Decision 4: C ABI plugin split into a separate repository
 In the context of the ImageGlass v10 native plugin ABI being a Windows-only
@@ -169,11 +170,11 @@ accepting that the C ABI surface in ithmb-core (c_api.rs, feature "c") is
 verified by CI but consumed elsewhere.
 
 ### Decision 5: 8 MB file size guard
-In the context of decoding untrusted .ithmb files where the largest known
-real frame is 810 KB,
+In the context of decoding untrusted .ithmb files where the largest
+built-in frame is 810 KB,
 facing OOM/DoS risk from pathological input,
 we decided to reject files over 8 MB before any allocation (ADR-0005),
-to achieve a ~10x safety margin over the largest observed frame,
+to achieve a ~10x safety margin over that frame,
 accepting that a hypothetical legitimate file over 8 MB would be rejected.
 
 ### Decision 6: zune-jpeg over the image crate for JPEG decode
@@ -203,7 +204,7 @@ Every project MUST document its whole-project state machine at `docs/PROJECT_MOD
 | **States** | The project's lifecycle states | `IDEA → SPEC'D → PROTOTYPED → IMPLEMENTED → POLISHED → SHIPPED → MAINTAINED → EVOLVED` |
 | **Valid transitions** | Allowed state changes, including feature additions and rollbacks | `SHIPPED → EVOLVED` (new feature), `SHIPPED → MAINTAINED` (bugfix) |
 | **Invalid transitions** | Forbidden state changes (the invariants) | `IMPLEMENTED → SHIPPED` without passing POLISHED |
-| **Invariants** | What must never change during any transition | "The 8 MB file size guard never shrinks below the largest known frame", "API v1 responses never remove fields" |
+| **Invariants** | What must never change during any transition | "The 8 MB file size guard never shrinks below the largest built-in frame", "API v1 responses never remove fields" |
 | **Blast radius map** | Which components are coupled and co-change together | "changing the profile schema requires checking pipeline/, profile_db/, profile_parser/, and the CLI" |
 
 **Gate check:** SPECIFICATION is incomplete without PROJECT_MODEL.md. REVIEW checks that every addition's transition is in the table. The full table lives at `docs/PROJECT_MODEL.md`.
@@ -275,7 +276,7 @@ crates/ithmb-core/src/jpeg.rs: JPEG-embedded stream decoder
   CALLER: pipeline::dispatch_decode
   Precondition: data starts with JPEG SOI (FF D8)
   Postcondition: decoded BGRA8 image, orientation applied
-  Invariant: JPEG SOI must be within the first 4 MB (covers all known real files)
+  Invariant: JPEG SOI must be within the first 4 MB (true for the samples in our survey)
 
 crates/ithmb-core/src/simd/: SIMD kernels (SSE2/AVX2/NEON) + scalar fallback
   HIDES: ISA-specific YUV conversion, runtime dispatch
@@ -390,7 +391,7 @@ Acceptance criteria in EARS notation. These are the gates that CI enforces on ev
 > WHERE a golden vector differs
 > THEN the change SHALL be rejected as a regression against the C# reference.
 
-**MESO/MICRO:** The fuzz targets in `fuzz/` are the verification requirement for the parser and pipeline modules. Miri runs 21 SSE2 tests with zero UB findings. The benchmark regression gate (25% threshold) protects the SIMD hot paths. `cargo-deny` enforces the license allowlist, multiple-versions ban, and the crates.io-only source allowlist.
+**MESO/MICRO:** The fuzz targets in `fuzz/` are the verification requirement for the parser and pipeline modules. Miri runs over the SSE2 tests with no UB found in the paths exercised. The benchmark regression gate (25% threshold) protects the SIMD hot paths. `cargo-deny` enforces the license allowlist, multiple-versions ban, and the crates.io-only source allowlist.
 
 ---
 
@@ -489,13 +490,13 @@ as the milestone history; future work follows the ROADMAP (v1.10, v2.0, v2.1).
 
 | Milestone | What shipped | Checkpoint | Acceptance Criteria |
 |-----------|------------|------------|---------------------|
-| M1 | C# reference codec (archived) | 594 tests, 30 golden vectors | WHEN the C# suite runs THEN all tests pass |
+| M1 | C# reference codec (archived) | C# test suite, golden vectors | WHEN the C# suite runs THEN all tests pass |
 | M2 | Rust core port | 8 decoders, 53 profiles | WHEN a known profile decodes THEN output matches C# |
 | M3 | CLI + sample generator | ithmb and ithmb-gen binaries | WHEN the CLI decodes a file THEN a PNG is written |
 | M4 | PhotoDB/ArtworkDB support | read, write, integrity | WHEN a PhotoDB opens THEN entries extract |
-| M5 | SIMD acceleration | SSE2/AVX2/NEON dispatch | WHEN YUV decoders run THEN 2-5x throughput vs scalar |
+| M5 | SIMD acceleration | SSE2/AVX2/NEON dispatch | WHEN YUV decoders run THEN SIMD output matches the scalar reference |
 | M6 | Python + WASM bindings | PyO3 and wasm-bindgen modules | WHEN bindings load THEN decode works from Python/JS |
-| M7 | Fuzz + hardening | 6 fuzz targets, Miri | WHEN fuzzing runs THEN 1.2M+ iterations, 0 crashes |
+| M7 | Fuzz + hardening | 6 fuzz targets, Miri | WHEN fuzzing runs THEN no crashes are found |
 | M8 | CI pipeline | pr-checks, ci-full, release | WHEN a commit lands THEN all gates pass |
 | M9 | Release pipeline | 5-target cross-compile + wheels | WHEN a v* tag is pushed THEN a Release is created |
 
@@ -506,7 +507,7 @@ Contingency: if a planned ROADMAP item exceeds its appetite, it is deferred to
 the next release rather than shipped half-done.
 ```
 
-**MESO/MICRO:** The core library ships in every milestone; wrappers ship independently. Quality level is production across the board: every error state is tested, fuzzed, and documented. Future milestones are tracked in ROADMAP.md with explicit deferral rules.
+**MESO/MICRO:** The core library ships in every milestone; wrappers ship independently. Quality targets release grade: error states are tested, fuzzed, and documented. Future milestones are tracked in ROADMAP.md with explicit deferral rules.
 
 ---
 
@@ -515,8 +516,9 @@ the next release rather than shipped half-done.
 ### MACRO: Test Philosophy
 
 ```
-Unit coverage target: every public decoder/parser entry point has a test; 570 unit tests
-  across 17 suites (docs/STATS.md). Line coverage is measured locally via cargo llvm-cov
+Unit coverage target: every public decoder/parser entry point has a test; the full
+  workspace test suite runs in CI (current counts are reported there; test assets
+  are listed in docs/STATS.md). Line coverage is measured locally via cargo llvm-cov
   and is not enforced in CI; the enforced floor is the per-module test tables below.
 Integration scope: module boundaries (pipeline dispatch, profile resolution, PhotoDB parsing, C-ABI)
 E2E coverage: CLI end-to-end decode, WASM runtime smoke tests, Python module tests
@@ -531,7 +533,7 @@ Framework: built-in #[test] + divan benches + proptest + cargo-fuzz (libfuzzer) 
 | pipeline | unit + fuzz | fuzz_decode_ithmb, fuzz_decode_pipeline | dispatch and transform paths |
 | photodb parser | unit + fuzz | fuzz_parse_photodb | chunk tree parsing |
 | profile_db / profile_parser | unit + fuzz | fuzz_parse_profile | JSON parsing and resolution |
-| SIMD kernels | Miri | 21 SSE2 tests, zero UB | unsafe code verification |
+| SIMD kernels | Miri | SIMD kernels; no UB in exercised paths | unsafe code verification |
 | encoders | unit + fuzz | fuzz_encode_roundtrip | encode/decode roundtrip |
 | CLI | integration | tests/cli.rs | end-to-end binary behavior |
 | WASM | runtime smoke | tests/wasm_runtime.rs | wasm-pack test |
@@ -639,7 +641,7 @@ Migration guides: docs/EVOLUTION.md (C# to Rust migration), docs/RELEASING.md (r
 
 ```
 License: MIT (SPDX: MIT)
-Contribution model: PR-based, single maintainer (B67687); contribution breakdown in README
+Contribution model: PR-based, single maintainer (Nami); contribution breakdown in README
 Code of conduct: not yet adopted (single maintainer); SECURITY.md defines the security reporting path
 Plugin API: C ABI (feature "c") + ImageGlass plugin in a separate repository; WASM and Python bindings
 Standards compliance: Conventional Commits, editorconfig, typos, cargo-deny license allowlist,
@@ -698,7 +700,7 @@ For engineering deliverables, also verified:
 - [x] Benchmark suite exists (divan benches in ithmb-core/benches, 6 benches)
 - [x] cargo-deny / deny.toml exists (license allowlist, bans, source registry)
 - [x] Multi-platform CI matrix configured (3-OS build matrix + 5-target release)
-- [x] Test-to-source ratio meets the 0.5x minimum (570 unit tests across 21 source modules)
+- [x] Test-to-source ratio meets the 0.5x minimum (target tracked in docs/STATS.md)
 
 ---
 
@@ -717,10 +719,10 @@ Every functional and non-functional requirement is numbered. Each maps to one or
 | FR-05 | Fail with context: every error includes values | 0 | F-001, F-009, F-010, F-014 | edge_cases.rs, alloc_contract.rs |
 | FR-06 | Tool-first: rustfmt, clippy, cargo-deny, cargo-fuzz, Miri | 0 | F-021 | simd_constants.rs, simd_tail.rs |
 | FR-07 | No new runtime dependency without Y-Statement | 0 | — | deny.toml (source: crates.io only) |
-| FR-08 | Memory safety: no unsafe outside SIMD kernels | 0 | F-021 | Miri (21 SSE2 tests) |
-| FR-09 | 570+ unit tests across 17+ suites pass | 1 | F-001..F-024 | All test files |
+| FR-08 | Memory safety: no unsafe outside SIMD kernels | 0 | F-021 | Miri (SIMD kernels) |
+| FR-09 | Full unit test suite passes | 1 | F-001..F-024 | All test files |
 | FR-10 | Known-profile decode matches C# golden vectors | 1 | F-024 | golden_comparison.rs (14 vectors) |
-| FR-11 | Fuzzing 1.2M+ iterations, 0 crashes | 1 | F-001, F-005..F-008, F-010 | fuzz_decode_ithmb, fuzz_decode_pipeline, fuzz_encode_roundtrip, fuzz_parse_photodb, fuzz_parse_profile |
+| FR-11 | Fuzzing finds no crashes | 1 | F-001, F-005..F-008, F-010 | fuzz_decode_ithmb, fuzz_decode_pipeline, fuzz_encode_roundtrip, fuzz_parse_photodb, fuzz_parse_profile |
 | FR-12 | CLI decode 480×864 RGB565 under 100 ms | 1 | F-002, F-020 | roundtrip.rs, cli.rs |
 | FR-13 | iPod Classic 6G BGR15 + MSB replication match reference | 1 | F-002, F-024 | golden_comparison.rs |
 | FR-14 | Pipelined dispatch (single entry point) | 2 | F-001, F-009, F-010 | edge_cases.rs, properties.rs |
@@ -766,11 +768,11 @@ Every functional and non-functional requirement is numbered. Each maps to one or
 | ID | Requirement | Section | Feature(s) | Verification |
 |----|-------------|---------|------------|--------------|
 | NFR-01 | Performance: decode under 100 ms for 480×864 | 1 | F-002, F-020 | benchmark regression gate (25% threshold) |
-| NFR-02 | Safety: no unsafe outside simd/ and c_api.rs | 0 | F-021 | Miri (21 tests, 0 UB), workspace unsafe_code=deny |
+| NFR-02 | Safety: no unsafe outside simd/ and c_api.rs | 0 | F-021 | Miri (no UB in exercised SIMD paths), workspace unsafe_code=deny |
 | NFR-03 | Correctness: pixel-exact output vs C# reference | 0 | F-024 | golden_comparison.rs (14 vectors) |
 | NFR-04 | Portability: SSE2 + AVX2 + NEON + scalar fallback | 2 | F-021 | 3-OS CI matrix, simd_tail.rs |
 | NFR-05 | Maintainability: 250 LOC ceiling per module | 11 | — | check.sh (wc -l gate) |
-| NFR-06 | Testability: 570+ unit tests, 0.5x test/source ratio | 8 | F-001..F-024 | cargo test, STATS.md |
+| NFR-06 | Testability: unit tests for public entry points; 0.5x test/source ratio target | 8 | F-001..F-024 | cargo test, STATS.md |
 | NFR-07 | Security: no panics in FFI, 8 MB guard, crate audit | 0, 2 | F-014, F-017 | cargo-audit, gitleaks, c_api_test.rs |
 | NFR-08 | Documentation: rustdoc + guides + standards | 12 | — | RUSTDOCFLAGS=-D warnings in CI |
 

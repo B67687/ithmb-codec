@@ -1,6 +1,6 @@
 ---
 name: Python packaging issue
-about: Install or wheel problems with the ithmb-codec Python package
+about: Install or wheel problems with the ithmb-core Python package
 title: ""
 labels: packaging
 assignees: ""
@@ -8,7 +8,7 @@ assignees: ""
 
 ## What failed
 
-`pip install ithmb-codec` error, wrong wheel, or import failure after install.
+`pip install ithmb-core` error, wrong wheel, or import failure after install.
 
 ## Required info (reports without these will be asked to add them)
 

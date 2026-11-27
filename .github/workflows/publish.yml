@@ -1,7 +1,8 @@
 # publish.yml — PUBLIC release: build all wheels + sdist and publish to real PyPI
 # on v* tags, then verify a clean-venv install. This filename is LOAD-BEARING:
-# the real-PyPI pending publisher binds owner/repo/workflow-file exactly
-# (B67687/ithmb-codec, publish.yml). Do NOT rename without updating PyPI.
+# the real-PyPI trusted publisher for the `ithmb-core` project binds
+# owner/repo/workflow-file exactly (B67687/ithmb-codec, publish.yml).
+# Do NOT rename without updating PyPI.
 # Runs ONLY in the public repo (tags are cut there); the dev trial equivalent
 # is test-publish.yml (TestPyPI, every dev push).
 name: publish
@@ -84,7 +85,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: ithmb-codec-${{ matrix.target }}
+          name: ithmb-core-${{ matrix.target }}
           path: target/wheels/*.whl
           if-no-files-found: error
 
@@ -103,20 +104,25 @@ jobs:
         run: pip install maturin==1.14.1
       - name: Build sdist
         run: maturin sdist --manifest-path pymod/Cargo.toml
-      - name: Assert sdist contains LICENSE
+      - name: Repack sdist with LICENSE at its declared root path
         run: |
+          set -euo pipefail
+          SD=$(ls target/wheels/*.tar.gz)
           tmp=$(mktemp -d)
-          tar -xzf target/wheels/*.tar.gz -C "$tmp"
-          if ! find "$tmp" -maxdepth 2 -iname 'LICENSE*' | grep -q .; then
-            echo 'FAIL: sdist missing LICENSE'
-            exit 1
-          fi
-          echo 'ok: sdist contains LICENSE'
+          tar -xzf "$SD" -C "$tmp"
+          root=$(find "$tmp" -mindepth 1 -maxdepth 1 -type d | head -1)
+          cp LICENSE "$root/LICENSE"
+          tar -czf "$SD" -C "$tmp" "$(basename "$root")"
+          rm -rf "$tmp"
+          tmp=$(mktemp -d)
+          tar -xzf "$SD" -C "$tmp"
+          test -f "$(find "$tmp" -mindepth 2 -maxdepth 2 -name LICENSE | head -1)"
+          echo 'ok: sdist has LICENSE at declared root path'
           rm -rf "$tmp"
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: ithmb-codec-sdist
+          name: ithmb-core-sdist
           path: target/wheels/*.tar.gz
           if-no-files-found: error
 
@@ -135,10 +141,12 @@ jobs:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           path: dist
-          pattern: ithmb-codec-*
+          pattern: ithmb-core-*
           merge-multiple: true
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # release/v1 as of 2026-07-28 (repo policy: SHA-pin actions; v1.14.2 tag dereferences to this same commit)
+        with:
+          skip-existing: true
 
   verify-pypi:
     name: Clean-venv install check
@@ -163,7 +171,7 @@ jobs:
           # (~5-8s pip startup per iteration) — same gate, ~10x faster polling.
           VISIBLE=0
           for i in $(seq 1 120); do
-            if curl -sSL https://pypi.org/simple/ithmb-codec/ | grep -q "ithmb_codec-$CARGO_VER"; then
+            if curl -sSL https://pypi.org/simple/ithmb-core/ | grep -q "ithmb_core-$CARGO_VER"; then
               echo "version visible after ${i}x5s"; VISIBLE=1; break
             fi
             sleep 5
@@ -173,7 +181,7 @@ jobs:
           # loud FAIL after 6 tries.
           INSTALLED=0
           for attempt in $(seq 1 6); do
-            if /tmp/verify-venv/bin/pip install "ithmb-codec==$CARGO_VER"; then
+            if /tmp/verify-venv/bin/pip install "ithmb-core==$CARGO_VER"; then
               INSTALLED=1; echo "installed on attempt $attempt"; break
             fi
             echo "install attempt $attempt failed (CDN skew?) — retrying in 30s"
@@ -185,5 +193,5 @@ jobs:
           assert ithmb_core.__version__ == '$CARGO_VER', (
               f'version mismatch: installed {ithmb_core.__version__} != Cargo $CARGO_VER')
           assert len(ithmb_core.list_profiles()) == 53, 'expected 53 active profiles'
-          print(f'ok: ithmb-codec {ithmb_core.__version__} == Cargo, 53 profiles')
+          print(f'ok: ithmb-core {ithmb_core.__version__} == Cargo, 53 profiles')
           "

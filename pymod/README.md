@@ -1,18 +1,21 @@
 # ithmb-core Python Bindings
 
-Python bindings for [ithmb-codec](https://github.com/B67687/ithmb-codec), a pure Rust decoder for Apple `.ithmb` thumbnail cache files.
+Python bindings for [ITHMB Codec](https://github.com/B67687/ithmb-codec), a pure Rust decoder for Apple `.ithmb` thumbnail cache files.
 
 ## Install
 
 ```bash
-pip install ithmb-codec
+pip install ithmb-core
 ```
 
 Trial builds from dev pushes are published to TestPyPI:
 
 ```bash
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ ithmb-codec
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ ithmb-core
 ```
+
+The distribution was renamed from `ithmb-codec` to `ithmb-core`; the old `ithmb-codec` PyPI project is frozen and will be deprecated. The import name is unchanged (`ithmb_core`), so existing Python code keeps working.
+
 ## Build
 
 ```bash
@@ -58,7 +61,7 @@ for p in profiles:
 
 ```bash
 cd pymod/
-uv run --frozen pytest          # 11 tests
+uv run --frozen pytest          # binding tests
 uv run --frozen ruff check .    # E,F,UP,B,SIM,I (line-length 100, py312)
 uv run --frozen basedpyright    # recommended mode
 ```

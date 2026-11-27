@@ -29,7 +29,7 @@
 │  ┌──────────────┐  ┌──────────────┐                          │
 │  │ ithmb-gen    │  │  fuzz/       │                          │
 │  │  [bin]       │  │  [libfuzzer] │                          │
-│  │  sample gen  │  │  3 targets   │                          │
+│  │  sample gen  │  │  6 targets   │                          │
 │  └──────────────┘  └──────────────┘                          │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
@@ -51,7 +51,7 @@
 | --------------------------- | ---------------- | -------------------------------------------------- |
 | **`ithmb-core`** (Rust lib) | Rust projects    | `cargo add ithmb-core`                             |
 | **`ithmb-cli`** (CLI)       | End users        | `cargo install ithmb-cli` to decode `.ithmb` files |
-| **`ithmb-codec`** (PyO3)    | Python devs      | `pip install ithmb-codec` for ML/scraping          |
+| **`ithmb-codec`** (PyO3)    | Python devs      | `pip install ithmb-core` for ML/scraping          |
 | **`ithmb-wasm`** (WASM)     | Browser/web      | Drag-drop demo page, WASM from any web app         |
 | **C API** (`--features c`)  | Any language     | Ruby `ffi`, Go `cgo`, Zig, etc. — no PyO3 needed   |
 | **ImageGlass plugin**       | ImageGlass users | Separate repo for `ig_plugin_get_api()`            |
@@ -68,7 +68,7 @@
 | 250 LOC ceiling | Review + `scripts/check.sh` | `wc -l` per module |
 | 40 LOC function ceiling | Review | Manual scan |
 | Coverage 80%+ | Local only (not CI-enforced) | `cargo llvm-cov` |
-| Fuzz 1.2M+ iterations | CI (ci-full.yml) | `cargo-fuzz` |
+| Fuzz targets run in CI | CI (ci-full.yml) | `cargo-fuzz` |
 | Benchmark regression <25% | CI (ci-full.yml) | `divan` + baseline.json |
 
 **Coverage measurement:** `cargo llvm-cov --workspace --fail-under-lines 80`

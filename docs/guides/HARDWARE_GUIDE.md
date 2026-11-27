@@ -1,9 +1,9 @@
 # Hardware Validation Guide
 
 > [!NOTE]
-> **Validation status: resolved.** The iOpenPod project (TheRealSavi) empirically validated 50+ format profiles across multiple iPod models purchased and tested. Confirmed "no known issues for iPod Nano and iPod Classic models." Our 53 active profiles derive from the same format ID sources — hardware validation is covered by iOpenPod's testing. See [iOpenPod#140](https://github.com/TheRealSavi/iOpenPod/issues/140).
+> **Validation status: partly external, and attributed.** The iOpenPod project (TheRealSavi) reports that it empirically validated 50+ format profiles on iPod models its maintainer purchased and tested, and reports no known issues for iPod Nano and iPod Classic models — see [iOpenPod#140](https://github.com/TheRealSavi/iOpenPod/issues/140). That testing covers iOpenPod's own profile set, not this project's 53 profiles, which have not been validated on hardware here. The F1055/F1060/F1061 reference set used in this repo is generated (see [`samples/reuhno-reference/README.md`](../../samples/reuhno-reference/README.md)); it exercises the format but is not a device dump.
 >
-> This guide is retained for reference in case new formats or unknown profiles are encountered in the future.
+> This guide is retained for reference in case new formats or unknown profiles are encountered, or if hardware validation is attempted for this codebase's profiles.
 
 ---
 
@@ -19,7 +19,7 @@
 ### Secondary target: iPod Nano 3G
 
 - **Model:** A1236
-- **Why:** Uses F1067 (YCbCr 4:2:0 padded) — the only profile using this decoder engine
+- **Why:** Uses F1067 (YCbCr 4:2:0 padded) — the only built-in profile that uses this decoder engine
 - **Price:** ~$15-25 USD
 - **Also validates:** F1024, F1066, F1060, F1055 (RGB565 cover art)
 
@@ -162,19 +162,19 @@ For YUV: ±1-3 per channel due to BT.601 rounding differences.
 
 ## Quick Reference: Which Format Each iPod Produces
 
-| iPod Model              | Likely formats                                                  | Validation               |
+| iPod Model              | Likely formats                                                  | Evidence                 |
 | ----------------------- | --------------------------------------------------------------- | ------------------------ |
-| **iPod Photo 4G**       | 1009, 1013, 1015, 1019, 1016, 1017                              | ✅ iOpenPod + synthetic  |
-| **iPod Video 5G/5.5G**  | 1036, 1024, 1015, 1019, 1028, 1029                              | ✅ iOpenPod + synthetic  |
-| **iPod Classic 5G/6G**  | 1067, 1024, 1066, 1055, 1060                                    | ✅ iOpenPod + Reuhno     |
-| **iPod Nano 3G**        | 1067, 1024, 1066                                                | ✅ iOpenPod + synthetic  |
-| **iPod Nano 4G**        | 1024, 1066, 1079, 1083                                          | ✅ iOpenPod + synthetic  |
-| **iPod Nano 6G**        | 1092, 1093                                                      | ✅ iOpenPod + synthetic  |
-| **iPhone 2G/3G**        | 3004, 3008, 3009, 3011 (RGB555)                                 | ✅ iOpenPod + synthetic  |
+| **iPod Photo 4G**       | 1009, 1013, 1015, 1019, 1016, 1017                              | iOpenPod report + synthetic  |
+| **iPod Video 5G/5.5G**  | 1036, 1024, 1015, 1019, 1028, 1029                              | iOpenPod report + synthetic  |
+| **iPod Classic 5G/6G**  | 1067, 1024, 1066, 1055, 1060                                    | iOpenPod report + Reuhno set |
+| **iPod Nano 3G**        | 1067, 1024, 1066                                                | iOpenPod report + synthetic  |
+| **iPod Nano 4G**        | 1024, 1066, 1079, 1083                                          | iOpenPod report + synthetic  |
+| **iPod Nano 6G**        | 1092, 1093                                                      | iOpenPod report + synthetic  |
+| **iPhone 2G/3G**        | 3004, 3008, 3009, 3011 (RGB555)                                 | iOpenPod report + synthetic  |
 | **iPhone 1G (iOS 1.x)** | 3004=55×55, 3009=120×160, 3011=75×75, 3008=640×480 (all RGB555) | ⚠️ No known real samples |
 
-✅ = Format validated by iOpenPod's empirical testing across multiple devices + our synthetic roundtrip
-⚠️ = Codec exists but no real samples available for validation
+iOpenPod report = iOpenPod reports real-device validation for this format; this repo's test for it is synthetic roundtrip (plus the Reuhno-generated set for 1055/1060/1061).
+⚠️ = Codec exists but no real samples available for validation.
 
 ---
 
@@ -189,7 +189,8 @@ Once you've validated (or fixed) a decoder, consider:
 
 ## Summary Checklist
 
-- [x] iOpenPod validated 50+ profiles across multiple iPod models — **hardware validation covered**
+- [x] iOpenPod reports hardware validation of 50+ profiles across multiple iPod models (third party — see the note above)
+- [ ] This repo's 53 profiles have not been validated on hardware
 - [ ] If a new or unknown profile is encountered: buy the device or extract sample files
 - [ ] Run `IthmbDecoder` on each `.ithmb` file
 - [ ] Compare output with iOpenPod decode

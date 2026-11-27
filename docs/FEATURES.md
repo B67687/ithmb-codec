@@ -206,7 +206,7 @@ proposed -> approved -> applied -> archived
 - **Status:** applied
 - **Reviewed:** 2026-08-27
 
-**Behavior Contract:** Preconditions: input buffer length known. Postconditions: files over 8 MB are rejected before any allocation. Invariants: the guard never shrinks below the largest known frame (810 KB). Error cases: oversized input returns `DecodeError::FileTooLarge { size, limit }`.
+**Behavior Contract:** Preconditions: input buffer length known. Postconditions: files over 8 MB are rejected before any allocation. Invariants: the guard never shrinks below the largest built-in frame (810 KB). Error cases: oversized input returns `DecodeError::FileTooLarge { size, limit }`.
 
 **Test Anchoring:**
 

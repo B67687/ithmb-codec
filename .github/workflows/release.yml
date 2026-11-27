@@ -137,7 +137,7 @@ jobs:
           - macOS ARM64 (Apple Silicon)
           - Windows x86_64
 
-          Plus **Python wheels** for all platforms — `pip install ithmb-codec` (PyPI;
+          Plus **Python wheels** for all platforms — `pip install ithmb-core` (PyPI;
           trial builds on TestPyPI).
 
           All binaries are built with SIMD acceleration enabled.

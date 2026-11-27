@@ -46,9 +46,9 @@ The process: **take image → encode to .ithmb → decode back to image**. A rou
 
 **What roundtrip DOESN'T mean**: Getting back your original image. Because the format is [lossy](#lossy-vs-lossless), encoding throws away information. The roundtrip tests check that our encoder and decoder are **consistent with each other** — not that they're lossless.
 
-**Stable roundtrip**: If you encode a file, decode it, and re-encode the result, the second `.ithmb` file is bit-identical to the first. This proves our encoder/decoder pair is mathematically stable — they've agreed on what the data means.
+**Stable roundtrip**: If you encode a file, decode it, and re-encode the result, the second `.ithmb` file is bit-identical to the first. This is what the stable-roundtrip tests check: the encoder/decoder pair is consistent for the tested formats and value ranges.
 
-**Why this matters**: If your roundtrip test passes, you know the decoder didn't introduce bugs. The only "loss" is what the format itself intended.
+**Why this matters**: If your roundtrip test passes, the decoder reproduces the encoded data for that input. The only "loss" is what the format itself intended.
 
 ---
 
@@ -60,7 +60,7 @@ A stronger form of the [roundtrip](#roundtrip) test. A format has a **stable rou
 encode(decode(encode(input))) == encode(input)
 ```
 
-In plain English: if you decode an existing `.ithmb` file and re-encode the result, you get the exact same bytes back. This proves:
+In plain English: if you decode an existing `.ithmb` file and re-encode the result, you get the exact same bytes back. This shows:
 
 1. The encoder and decoder agree on the format specification exactly
 2. No information is lost beyond what the format inherently discards
@@ -361,7 +361,7 @@ The `ithmb-core-cabi` crate (now in its [own repository](https://github.com/B676
 
 ## PyO3 — Rust ↔ Python Bridge
 
-**PyO3** is a Rust library that makes it easy to write Python modules in Rust. Our `pymod/` crate uses PyO3 to expose three functions to Python: `decode()`, `open_ithmb()`, and `list_profiles()`. Users can `pip install ithmb-codec` and use it from Python scripts.
+**PyO3** is a Rust library that makes it easy to write Python modules in Rust. Our `pymod/` crate uses PyO3 to expose three functions to Python: `decode()`, `open_ithmb()`, and `list_profiles()`. Users can `pip install ithmb-core` and use it from Python scripts.
 
 ## cdylib — C Dynamic Library
 
@@ -385,8 +385,8 @@ Fuzz testing feeds random, malformed, or unexpected data to the decoder to see i
 
 Our fuzz suite includes:
 
-- **libfuzzer targets** (3 targets): 1.2M+ iterations, 0 crashes
-- **Random mutation fuzz**: 10,000 random byte mutations across all 8 decoders
+- **libfuzzer targets** in `fuzz/`
+- **Random mutation fuzz**: random byte mutations across all 8 decoders
 - **Edge cases**: empty input, truncated data, negative dimensions, garbage data
 
 ---
@@ -395,7 +395,7 @@ Our fuzz suite includes:
 
 **Miri** is a Rust tool that interprets Rust code and checks for **Undefined Behavior (UB)** — things like reading uninitialized memory, violating pointer aliasing rules, or using SIMD instructions incorrectly. It's an interpreter, not a native runner — about **100–500× slower** than normal execution.
 
-All our unsafe SIMD code paths pass Miri verification (21 tests). Six additional exhaustive tests (68,000+ total iterations across 5 values⁶ for YUV and 16⁴ nibble combinations for CL) are skipped under Miri because they would take minutes — the same tests complete in ~20ms natively. The skip uses standard Rust `#[cfg_attr(miri, ignore)]` convention, not a bug or infinite loop.
+Miri runs over the unsafe SIMD code paths and reports no undefined behavior in the paths it exercises. Six additional exhaustive tests (large value/combination sweeps for YUV and CL) are skipped under Miri because they would take minutes — the same tests complete in about 20 ms natively. The skip uses the standard Rust `#[cfg_attr(miri, ignore)]` convention, not a bug or infinite loop.
 
 ---
 

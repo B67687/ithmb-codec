@@ -6,11 +6,11 @@ These items are already done but worth calling out so contributors don't propose
 
 - **WASM decoder page**: Browser-based .ithmb decoder at [ithmb-codec-dev](https://github.com/B67687/ithmb-codec-dev) with drag-drop PNG rendering (shipped with the web release; the 1.10.x enterprise line was renumbered — see EVOLUTION.md).
 - **C ABI plugin split**: The ImageGlass plugin lives in its own repo ([ImageGlass-Ithmb-Plugin](https://github.com/B67687/imageglass-ithmb-plugin)) with independent versioning and CI (ADR-0002).
-- **8 MB file size guard**: Systematic research-driven limit with 10x margin on the largest known frame (ADR-0005).
+- **8 MB file size guard**: Systematic research-driven limit with ~10x margin on the largest frame in the profile database (ADR-0005).
 - **Cross-platform SIMD dispatch**: SSE2/AVX2/NEON compiled with runtime `is_x86_feature_detected!` selection; scalar fallback always available (ADR-0001).
 - **Quarterly audit protocol**: Layered adversarial reviews every quarter with 4 parallel research agents (ADR-0004).
 - **JPEG carving fallback**: Byte-level SOI scan for files with unknown prefixes, enabling decode when no profile matches.
-- **CL decoder SSE4.1 + AVX2**: SSE4.1 `pshufb` and AVX2 paths added for the CL per-pixel chroma decoder (2-3x gain).
+- **CL decoder SSE4.1 + AVX2**: SSE4.1 `pshufb` and AVX2 paths added for the CL per-pixel chroma decoder.
 - **Benchmark CI**: Automated regression detection with 25% threshold against saved baseline artifacts.
 
 ---
@@ -31,7 +31,7 @@ The benchmark suite covers all 8 decoders but at a single resolution per format.
 
 ### ARM64 CI tests on native hardware
 
-Linux ARM64 (aarch64) CI runs on GitHub Actions `ubuntu-24-arm` runners. Ensure all 17 test suites pass with full NEON acceleration, and add the `--features simd` matrix to the ARM64 CI job (currently only runs on x64). This closes the gap where ARM64 SIMD is tested only in ad-hoc local runs.
+Linux ARM64 (aarch64) CI runs on GitHub Actions `ubuntu-24-arm` runners. Ensure the full test suite passes with full NEON acceleration, and add the `--features simd` matrix to the ARM64 CI job (currently only runs on x64). This closes the gap where ARM64 SIMD is tested only in ad-hoc local runs.
 
 ---
 
@@ -91,7 +91,7 @@ The benchmark CI saves artifacts but there is no dashboard. Set up a simple stat
 
 ### Formal verification of unsafe SIMD code (KLEE or similar)
 
-All `unsafe` blocks are confined to `simd/*.rs`. Miri covers 21 SSE2 tests with zero UB, but Miri cannot prove the absence of UB in all paths. Explore KLEE (or a Rust-compatible symbolic execution tool) to exhaustively verify the SIMD kernels: correct masking, no out-of-bounds access for any width, correct tail handling for every non-SIMD-divisible dimension. This is a long-term investment that depends on toolchain maturity.
+All `unsafe` blocks are confined to `simd/*.rs`. Miri covers the SSE2 tests with no UB found, but Miri cannot prove the absence of UB in all paths. Explore KLEE (or a Rust-compatible symbolic execution tool) to exhaustively verify the SIMD kernels: correct masking, no out-of-bounds access for any width, correct tail handling for every non-SIMD-divisible dimension. This is a long-term investment that depends on toolchain maturity.
 
 ### Plug-in system for custom format handlers
 
@@ -99,7 +99,7 @@ The 53 active profiles (54th raw entry, prefix 1044, disabled at load) cover kno
 
 ### GPU-accelerated decode via compute shaders
 
-YUV-to-BGRA conversion is ALU-bound, making it a candidate for GPU offload. A compute-shader path (WGSL for WebGPU, or SPIR-V for Vulkan) would batch-convert large batches of frames. This is relevant for the WASM decoder (WebGPU shader) and for bulk CLI decode on systems with a GPU. Low priority -- the CPU SIMD paths already saturate memory bandwidth for simple formats and achieve 3-10 us per frame.
+YUV-to-BGRA conversion is ALU-bound, making it a candidate for GPU offload. A compute-shader path (WGSL for WebGPU, or SPIR-V for Vulkan) would batch-convert large batches of frames. This is relevant for the WASM decoder (WebGPU shader) and for bulk CLI decode on systems with a GPU. Low priority -- the CPU SIMD paths already saturate memory bandwidth for simple formats.
 
 ### FFmpeg / libav integration for video thumbnail extraction
 

@@ -60,16 +60,16 @@ The most complex module is `pipeline/`: it hides the resolution order (prefix lo
 ## 4. Key Decisions
 
 **Decision 1: Rust clean-room port over the C# reference.**
-The codec was first written in C# as a Native AOT plugin for ImageGlass v10. We needed to distribute it as a library, CLI, Python bindings, and WASM, and the C# plugin was trapped inside a Windows-only GUI ABI. We chose a pure Rust workspace with a C ABI from day one. The tradeoff: a full rewrite and a parity gap that took three waves of quality work to close against the C# reference (documented in docs/EVOLUTION.md). The C# repo is archived but remains the authoritative algorithm reference.
+The codec was first written in C# as a Native AOT plugin for ImageGlass v10. We needed to distribute it as a library, CLI, Python bindings, and WASM, and the C# plugin was trapped inside a Windows-only GUI ABI. We chose a pure Rust workspace with a C ABI from day one. The tradeoff: a full rewrite and a parity gap that took three waves of quality work to close against the C# reference (documented in docs/EVOLUTION.md). The C# repo is archived and serves as the reference the port was verified against.
 
 **Decision 2: Static profile database over pure format detection.**
-`.ithmb` files are headerless blobs keyed by a 4-byte format prefix, and one prefix can map to multiple resolutions and encodings. Guessing the format from bytes alone risks silent misdecodes. We chose a curated database of 53 built-in profiles (derived from iOpenPod's empirically validated set and cross-referenced against libgpod and Keith's iPod Photo Reader), resolved by prefix with a data-size heuristic as a tiebreaker. The tradeoff: a maintenance burden, and unknown formats from obscure firmware versions may not decode (documented as a limitation).
+`.ithmb` files are headerless blobs keyed by a 4-byte format prefix, and one prefix can map to multiple resolutions and encodings. Guessing the format from bytes alone risks silent misdecodes. We chose a curated database of 53 built-in profiles (derived from the profile set iOpenPod reports as empirically validated and cross-referenced against libgpod and Keith's iPod Photo Reader), resolved by prefix with a data-size heuristic as a tiebreaker. The tradeoff: a maintenance burden, and unknown formats from obscure firmware versions may not decode (documented as a limitation).
 
 **Decision 3: 8 MB file size guard before any allocation.**
-The codec decodes untrusted files from photo libraries. The largest known real frame is 810 KB, so we reject files over 8 MB before allocating, giving roughly a 10x safety margin against OOM/DoS from pathological input. The tradeoff: a hypothetical legitimate file over 8 MB would be rejected (the actual iPod firmware caps files at ~500 MB, so this is theoretical).
+The codec decodes untrusted files from photo libraries. The largest built-in frame is 810 KB, so we reject files over 8 MB before allocating, giving roughly a 10x safety margin against OOM/DoS from pathological input. The tradeoff: a hypothetical legitimate file over 8 MB would be rejected (the actual iPod firmware caps files at ~500 MB, so this is theoretical).
 
 **Decision 4: Runtime SIMD dispatch with a scalar fallback.**
-YUV-to-BGRA conversion is the ALU-bound hot path. We chose runtime `is_x86_feature_detected!` dispatch (SSE2/AVX2/NEON) with a scalar fallback rather than per-target compile-time builds. The tradeoff: on macOS ARM the NEON path is gated on CI runners and falls back to scalar (a known, documented edge case). Hand-written SIMD for RGB565/RGB555 was measured and rejected: it was 34x slower on Intel due to AVX frequency downclock and port-5 bottleneck, so those decoders use auto-vectorized scalar loops.
+YUV-to-BGRA conversion is the ALU-bound hot path. We chose runtime `is_x86_feature_detected!` dispatch (SSE2/AVX2/NEON) with a scalar fallback rather than per-target compile-time builds. The tradeoff: on macOS ARM the NEON path is gated on CI runners and falls back to scalar (a known, documented edge case). Hand-written SIMD for RGB565/RGB555 was measured and rejected: it was slower than LLVM's auto-vectorized scalar loop on Intel due to AVX frequency downclock and port-5 bottleneck, so those decoders use auto-vectorized scalar loops.
 
 **Decision 5: Zero-default dependencies with optional features.**
 As a library meant for embedding (WASM, embedded, FFI), we ship with an empty default feature set. LRU cache, metrics, C ABI, and logging are all opt-in features. The tradeoff: consumers must explicitly enable what they need, and feature-flag combinations add a small testing surface.
@@ -79,9 +79,9 @@ T-prefix files embed a JPEG stream. We chose zune-jpeg 0.5 for a small, auditabl
 
 ## 5. Quality Guarantees
 
-**Tests.** 570 unit tests across 17 suites (docs/STATS.md). Coverage includes: exhaustive per-format roundtrip (RGB565 over all 65,536 values, RGB555 over 32,768, CL over 15,625 nibble combos), 14 golden vectors verified against the C# reference, 11 concurrency stress tests, statistical analysis of decoded output, edge cases (zero dimension, corruption, truncation, oversized input), PhotoDB roundtrip and integrity, and 21 Miri tests over the unsafe SIMD kernels with zero UB findings.
+**Tests.** The workspace test suite (see [docs/STATS.md](docs/STATS.md) for the verification assets; current counts are reported by CI) covers exhaustive per-format roundtrip (RGB565 over all 65,536 values, RGB555 over 32,768, CL over 15,625 nibble combos), 14 golden vectors verified against the C# reference, concurrency stress tests, statistical analysis of decoded output, edge cases (zero dimension, corruption, truncation, oversized input), PhotoDB roundtrip and integrity, and Miri runs over the unsafe SIMD kernels with no UB findings in the paths exercised.
 
-**Fuzzing.** Six libfuzzer targets run in CI (30 s each): decode, open, encode roundtrip, pipeline with transforms, PhotoDB parsing, and profile parsing. Over 1.2M iterations with zero crashes.
+**Fuzzing.** The libfuzzer targets in `fuzz/` run in CI (30 s each): decode, open, encode roundtrip, pipeline with transforms, PhotoDB parsing, and profile parsing.
 
 **Invariants.** Decoded output length always equals width x height x 4 (BGRA). No decoder panics on malformed input; every failure is a typed `DecodeError` carrying the values that caused it. The 8 MB size guard is enforced before any allocation. `unsafe` is confined to the SIMD kernels and the C-ABI boundary (workspace lint `unsafe_code = "deny"`).
 
@@ -89,7 +89,7 @@ T-prefix files embed a JPEG stream. We chose zune-jpeg 0.5 for a small, auditabl
 
 **Automated checks.** Every commit and PR runs: `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, typos, lychee link check, cargo-deny (license allowlist, multiple-versions ban, crates.io-only source registry), cargo-audit, `cargo doc` with `RUSTDOCFLAGS="-D warnings"`, and a gitleaks secrets scan. Main-branch pushes additionally run a 3-OS build/test matrix, a benchmark regression gate (25% threshold), the fuzz targets, the C-ABI symbol check, and the WASM build.
 
-**Honest limits.** macOS ARM NEON is gated on CI and falls back to scalar; there is no dedicated NEON CI runner. Cache concurrency stress tests are deferred (feature-gated LRU cache, low user impact). F-prefix decoder coverage is broad but not exhaustive: 53 profiles cover known formats through iPod Nano 7G and iPhone 2G, but unknown formats from obscure firmware may still exist. JPEG SOI must appear within the first 4 MB of a file (covers all known real files). Line coverage is measured locally via cargo llvm-cov but is not enforced in CI.
+**Honest limits.** macOS ARM NEON is gated on CI and falls back to scalar; there is no dedicated NEON CI runner. Cache concurrency stress tests are deferred (feature-gated LRU cache, low user impact). F-prefix decoder coverage is broad but not exhaustive: 53 profiles cover known formats through iPod Nano 7G and iPhone 2G, but unknown formats from obscure firmware may still exist. JPEG SOI must appear within the first 4 MB of a file (true of every real file in our survey). Line coverage is measured locally via cargo llvm-cov but is not enforced in CI.
 
 ---
 

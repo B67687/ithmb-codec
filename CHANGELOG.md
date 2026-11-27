@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/),
 
 ## [Unreleased]
 
+## [1.9.11] - 2026-11-27
+
+### Changed
+
+- **Python distribution renamed to `ithmb-core`** — `pip install ithmb-core`; import stays `ithmb_core`, Rust crate stays `ithmb-core`, old `ithmb-codec` PyPI project frozen. No API or decoder changes; package/manifest/workflow/docs rename only.
+
 ## [1.9.10] - 2026-09-10
 
 ### Changed

@@ -31,7 +31,7 @@ A profile is a set of settings that tells the decoder how to interpret a raw .it
 - An **encoding** — which pixel format to use (RGB565, RGB555, ReorderedRGB555, UYVY, YCbCr420, CLCL, or CL)
 - Various flags — things like whether the pixel data is packed or padded, whether channels are swapped, etc.
 
-There are 53 active profiles (54th raw entry, prefix 1044, disabled at load) covering known iPod/iPhone devices from 2004 through 2016.
+There are 53 active profiles (54th raw entry, prefix 1044, disabled at load) covering the iPod/iPhone devices we know about (2004–2016).
 
 ## What's a Decoder?
 
@@ -50,7 +50,7 @@ A decoder is code that converts raw pixel data from one format to BGRA (blue, gr
 
 ## What's SIMD?
 
-SIMD (Single Instruction, Multiple Data) is a technique where the CPU processes multiple pixels at once instead of one at a time. This makes decoding 4-6× faster. This project uses SSE2 (on x64 Intel/AMD CPUs) and NEON (on ARM64 CPUs like Apple Silicon and Raspberry Pi).
+SIMD (Single Instruction, Multiple Data) is a technique where the CPU processes multiple pixels at once instead of one at a time. This speeds up the codec's YUV-heavy decode paths. This project uses SSE2 (on x64 Intel/AMD CPUs) and NEON (on ARM64 CPUs like Apple Silicon and Raspberry Pi).
 
 ## What's PhotoDB?
 

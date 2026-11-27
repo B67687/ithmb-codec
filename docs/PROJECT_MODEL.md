@@ -63,7 +63,7 @@ Any transition that violates an invariant below
 
 ## Invariants (What Must Never Change)
 
-1. **The 8 MB file size guard never shrinks below the largest known frame (810 KB).** It may only grow. (ADR-0005)
+1. **The 8 MB file size guard never shrinks below the largest built-in frame (810 KB).** It may only grow. (ADR-0005)
 2. **The C ABI surface never breaks:** `ithmb_decode` and `ithmb_prefix_to_profile` keep their names and signatures; symbol presence is verified by `nm` in CI.
 3. **No GPL code enters the codebase.** Clean-room MIT only; the ImageGlass PR #2316 reference is behavior-informed, never copied.
 4. **Inward dependencies hold:** `ithmb-core` never imports CLI, WASM, Python, or C-ABI code.

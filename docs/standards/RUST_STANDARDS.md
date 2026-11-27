@@ -1,7 +1,7 @@
 # Rust Engineering Standards
 
 This file documents the Rust engineering practices applied in this workspace.
-It is based on authoritative external sources (linked below) and our own experience.
+It is based on established external sources (linked below) and our own experience.
 
 ## Authorities
 

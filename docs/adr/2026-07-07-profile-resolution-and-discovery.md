@@ -4,11 +4,11 @@
 
 ## Context
 
-The `.ithmb` format has no central registry. Format IDs (4-byte big-endian prefixes) and their corresponding dimensions, pixel encodings, byte orders, and post-processing flags must be discovered from 20+ open-source implementations across 15 years of iPod reverse-engineering. A profile database encodes this knowledge so the codec can identify and decode any `.ithmb` file without network access.
+The `.ithmb` format has no central registry. Format IDs (4-byte big-endian prefixes) and their corresponding dimensions, pixel encodings, byte orders, and post-processing flags must be discovered from the open-source implementations we surveyed across 15 years of iPod reverse-engineering. A profile database encodes this knowledge so the codec can identify and decode any `.ithmb` file without network access.
 
 The codec must handle:
 
-1. **Known formats** — 53 profiles covering iPod Photo 4G through iPhone 2G and iPod Nano 7G, sourced from iOpenPod (TheRealSavi, 50+ empirically validated entries), libgpod (PhotoDB chunk parser), and hardware validation (iPod Classic 6G samples from Reuhno).
+1. **Known formats** — 53 profiles covering iPod Photo 4G through iPhone 2G and iPod Nano 7G, sourced from iOpenPod (TheRealSavi, which reports 50+ entries validated on real hardware), libgpod (PhotoDB chunk parser), and the iPod Classic 6G sample set from Reuhno.
 2. **Unknown variants** — Files with a format prefix not in the database, or files whose prefix is known but whose actual encoding differs by device firmware.
 3. **Runtime overrides** — Advanced users who discover a new format variant or need to tweak parameters (crop, rotation, channel swap) without recompiling.
 4. **AOT compatibility** — The C# prototype could not use `System.Text.Json` in Native AOT and required a hand-written JSON parser. The Rust port inherits the same constraint: if serde_json were used, the `simd` dependency would pull in heavy code and increase compile times for an operation that runs once at startup.
@@ -124,11 +124,11 @@ The 53 active profiles in `data/profiles.json` derive from:
 
 | Source | Contribution |
 |--------|-------------|
-| iOpenPod (Savi) | 50+ format IDs, empirically validated across multiple iPod models (Nano, Classic, Touch). Primary dimension/encoding reference. |
+| iOpenPod (Savi) | 50+ format IDs; iOpenPod reports validation on real iPod models (Nano, Classic, Touch). Primary dimension/encoding reference. |
 | libgpod | PhotoDB format ID tables, padded slot handling, device-format mappings. |
 | Keith's iPod Photo Reader (kebwi) | Original RE (2005), 13 decode methods, multi-frame confirmation, crop/rotation parameters. |
 | clickwheel (dstaley) | C# ArtworkDB read/write, 40+ format IDs with byte order flags. |
-| Hardware validation (Reuhno) | iPod Classic 6G samples (F1061, F1055, F1060) confirming BGR15 channel-swap and MSB replication. 30 reference PNG files. |
+| Reuhno sample set | iPod Classic 6G samples (F1061, F1055, F1060) used to check BGR15 channel-swap and MSB replication. The 30 checked-in reference PNG files are generated vectors. |
 
 ## Consequences
 
@@ -139,7 +139,7 @@ The 53 active profiles in `data/profiles.json` derive from:
 - **Resilient decode**: The fallback encoding chain handles the known ambiguity cases (format 1081, swapped chroma planes) that would otherwise produce garbled output without explanation.
 - **Compile-time validation**: The embedded JSON is parsed during `ProfileDb::load_builtin()`, tested by `load_builtin_has_53_profiles` — if the JSON is malformed, the test catches it immediately.
 - **Thread-safe initialization**: `OnceLock` guarantees exactly-one initialization with no locks on the hot path. The database is read-only after init.
-- **Stable across firmware**: The C# prototype proved that 53 profiles cover all known iPod/iPhone firmware versions. The database is not expected to grow rapidly.
+- **Stable across firmware**: The C# prototype found that 53 profiles covered every iPod/iPhone firmware version available to it. The database is not expected to grow rapidly.
 - **AOT-ready**: No reflection, no proc macros, no runtime code generation. The custom parser works identically in all Rust compilation modes.
 
 ### Negative

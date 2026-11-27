@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="docs/badges/ithmb-icon.svg" alt="Ithmb Image Codec" width="96" height="96">
+<img src="docs/badges/ithmb-icon.svg" alt="ITHMB Codec" width="96" height="96">
 
-# Ithmb Image Codec
+# ITHMB Codec
 
 [![License: MIT](https://cdn.jsdelivr.net/gh/B67687/ithmb-codec@main/docs/badges/license.svg)](LICENSE)
 [![Rust](https://cdn.jsdelivr.net/gh/B67687/ithmb-codec@main/docs/badges/rust.svg)](https://rust-lang.org)
@@ -28,7 +28,7 @@ A pure Rust codec library, CLI tool, and C ABI shared library for decoding and e
 
 **Related projects**
 
-- 🌐 [ITHMB Codec Web](https://ithmb-codec.dev/ithmb-decoder/) · [Repo](https://github.com/B67687/ithmb-codec-web) — browser-based decoder, no install, works on any OS, 100% private
+- 🌐 [ITHMB Codec Web](https://ithmb-codec.dev/ithmb-decoder/) · [Repo](https://github.com/B67687/ithmb-codec-web) — browser-based decoder, no install, works on any OS, private by default
 - 🖼️ [ImageGlass-Ithmb-Plugin](https://github.com/B67687/ImageGlass-Ithmb-Plugin) — native .ithmb decoding inside ImageGlass
 
 **Key features**
@@ -36,7 +36,7 @@ A pure Rust codec library, CLI tool, and C ABI shared library for decoding and e
 - 53 built-in profiles (+ 1 speculative disabled) covering known iPod/iPhone formats
 - 8 decoders (RGB565, RGB555, ReorderedRGB555, UYVY, YCbCr420, CLCL, CL, JPEG)
 - 7 synthetic encoders for all raw formats
-- Roundtrip-proven tests — see [STATS.md](docs/STATS.md) for current count and suite breakdown
+- Roundtrip tests — see [STATS.md](docs/STATS.md) for the verification assets
 - PhotoDB/ArtworkDB read, write, and integrity checking
 - Multi-frame F-prefix raw file support
 - BGR15 channel-swap for iPhone compatibility
@@ -49,13 +49,13 @@ A pure Rust codec library, CLI tool, and C ABI shared library for decoding and e
 
 > Not an iOS 13+ thumbnail decoder — those use a different proprietary format.
 
-**T-prefix** — contains an embedded JPEG. ✅ Fully supported (validated on 1,183 real files).
+**T-prefix** — contains an embedded JPEG. ✅ Fully supported (see [Testing & validation](#testing--validation) for the sample sets used).
 
-**F-prefix** (e.g. `F1019_1.ithmb`) — raw uncompressed thumbnails (RGB565, RGB555, UYVY, YCbCr420, CLCL nibble-chroma). ✅ Cross-referenced against iOpenPod's empirically validated set (50+ profiles across multiple iPod models) and confirmed on real iPod Classic 6G samples (F1061/F1055/F1060).
+**F-prefix** (e.g. `F1019_1.ithmb`) — raw uncompressed thumbnails (RGB565, RGB555, UYVY, YCbCr420, CLCL nibble-chroma). ✅ Cross-referenced against the profile set iOpenPod reports as empirically validated (50+ profiles across multiple iPod models) and checked against Reuhno's F1061/F1055/F1060 sample set.
 
 <table><tr><td>
 🎖️ <strong>Special thanks to <a href="https://github.com/TheRealSavi">Savi</a> and the <a href="https://github.com/TheRealSavi/iOpenPod">iOpenPod</a> community</strong><br>
-<em>For hardware validation — purchasing multiple iPod models and testing profiles across firmware generations. Profile tuning incorporates feedback from the iOpenPod community.</em>
+<em>For hardware validation of its profile set — purchasing multiple iPod models and testing profiles across firmware generations. Profile tuning incorporates feedback from the iOpenPod community.</em>
 </td></tr></table>
 
 > [!TIP]
@@ -80,7 +80,7 @@ cargo build --release
 ./target/release/ithmb --open PhotoDB
 
 # Or use from Python
-pip install ithmb-codec  # stable releases (PyPI); trial builds: pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ ithmb-codec  # prebuilt abi3 wheel, no Rust toolchain needed
+pip install ithmb-core  # stable releases (PyPI); trial builds: pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ ithmb-core  # prebuilt abi3 wheel, no Rust toolchain needed
 ```
 
 For detailed build instructions see [Build from source](#build-from-source).
@@ -118,7 +118,7 @@ For detailed build instructions see [Build from source](#build-from-source).
 ### File size guard
 
 > [!NOTE]
-> Files larger than **8 MB** are rejected before decoding to prevent OOM/DoS from pathological input. All known real .ithmb files are under 1 MB (max observed: 852 KB), and the largest single frame is 810 KB — so 8 MB provides ~10× margin on the largest frame. The actual iPod firmware caps individual .ithmb files at ~500 MB. See [ADR-0005](docs/adr/2026-07-07-file-size-guard-limit.md) for the full research.
+> Files larger than **8 MB** are rejected before decoding to prevent OOM/DoS from pathological input. In our sample survey, no real `.ithmb` file exceeded 1 MB (largest observed: 852 KB), and the largest single frame in the profile database is 810 KB — so 8 MB gives ~10× margin on that frame. A 2005 iLounge forum analysis, cited in [ADR-0005](docs/adr/2026-07-07-file-size-guard-limit.md), reports that iPod firmware splits files at around 500 MB.
 
 ## Acknowledgments
 
@@ -135,15 +135,17 @@ This project builds on the work of the iPod reverse-engineering community. Key r
 
 See [ACKNOWLEDGMENTS.md](docs/ACKNOWLEDGMENTS.md) for the full list (33 projects, sample file sources, academic references, and color conversion standards).
 
+> How runtime dependencies are chosen versus implemented first-party: [docs/DEPENDENCY_POLICY.md](docs/DEPENDENCY_POLICY.md).
+
 ### Contribution breakdown
 
 | Area                            | What was done                                                                                    | Who                 |
 | ------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------- |
 | **Community foundations**       | iOpenPod, libgpod, clickwheel, Keith's RE, pyithmb, ithmb-rs, 15+ more                           | Community           |
-| **Hardware-validated profiles** | 50+ profiles empirically validated across multiple iPod models                                   | Savi (iOpenPod)     |
-| **Sample contribution**         | First public F-prefix .ithmb test vectors + 30 reference PNG files (CC0)                         | Reuhno              |
+| **Third-party hardware validation** | iOpenPod reports 50+ profiles empirically validated across multiple iPod models              | Savi (iOpenPod)     |
+| **Sample contribution**         | Public F-prefix .ithmb test vectors + 30 reference PNG files (CC0)                         | Reuhno              |
 | **AI execution**                | Code, testing, documentation, CI, format cross-referencing                                       | AI (Sisyphus + OMO) |
-| **Project lead**                | Vision, architecture, quality control, community engagement, verification, hardware coordination | B67687              |
+| **Project lead**                | Vision, architecture, quality control, community engagement, verification, hardware coordination | Nami                |
 
 ---
 
@@ -189,7 +191,7 @@ The workspace produces four artifacts:
 | -------------- | ------------------------------------- | --------------------------------------------- |
 | `ithmb-core`   | `libithmb_core.rlib` (static library) | `cargo add ithmb-core` (crates.io)            |
 | `ithmb-cli`    | `ithmb` CLI binary                    | `cargo install ithmb-cli` (crates.io)         |
-| `ithmb-codec`  | `libithmb_codec.{so,dylib,pyd}`       | `pip install ithmb-codec` (PyPI via maturin)  |
+| `ithmb-codec`  | `libithmb_codec.{so,dylib,pyd}`       | `pip install ithmb-core` (PyPI via maturin)  |
 | `ithmb-gen`    | `ithmb-gen` sample generator binary   | `cargo install --path crates/ithmb-gen`       |
 
 A separate C ABI shared library for ImageGlass integration is maintained at [ImageGlass-Ithmb-Plugin](https://github.com/B67687/ImageGlass-Ithmb-Plugin).
@@ -224,7 +226,7 @@ cargo build --release --features cache
 Available features: `cache` (LRU raw file cache), `metrics` (decode timing counters), `c` (C ABI). SIMD acceleration is always compiled with runtime dispatch.
 
 > [!NOTE]
-> RGB565/RGB555 pixel-unpack formats use auto-vectorized scalar loops instead of hand-written SIMD — the hand-written SSE2/AVX2 was 34× slower on Intel due to AVX frequency downclock and port-5 bottleneck.
+> RGB565/RGB555 pixel-unpack formats use auto-vectorized scalar loops instead of hand-written SIMD — the hand-written SSE2/AVX2 measured slower than the scalar loop on Intel due to AVX frequency downclock and port-5 bottleneck.
 
 ---
 
@@ -234,26 +236,25 @@ Available features: `cache` (LRU raw file cache), `metrics` (decode timing count
 cargo test
 ```
 
-See **[STATS.md](docs/STATS.md)** for current test counts and suite breakdown. Coverage includes:
+See **[STATS.md](docs/STATS.md)** for the test and verification assets. Coverage includes:
 
 - **Roundtrip** — RGB565 (65,536 values), RGB555 (32,768), CL (15,625 nibble combos)
-- **Fuzz** — 350+ mutated inputs across all 8 decoders + 10,000 random byte mutations + 2 libfuzzer targets (1.2M+ iterations, 0 crashes)
+- **Fuzz** — mutated inputs across all 8 decoders, random byte-mutation tests, and the libfuzzer targets in `fuzz/`
 - **Golden vectors** — 14 reference files verified against expected output
-- **Concurrency** — 11 stress tests (Barrier sync, cancellation, repeated decode)
+- **Concurrency** — stress tests (Barrier sync, cancellation, repeated decode)
 - **Statistical** — decorrelation, entropy, histogram analysis of decoded output
 - **Edge cases** — zero dimension, corruption, partial data, truncation, oversized inputs
 - **Speculative** — CL/CLCL, rotation, swapped chroma, trailing padding, JPEG carving fallback
 - **PhotoDB** — roundtrip write, integrity, JPEG blob decode, device-specific format tables
 - **Encoder** — interlace fields, BT.601 color conversion, all format generators
 
-**12 test suites** across the workspace, all passing.
+A full workspace test suite runs in CI on every push.
 
 **Real-device validation:**
 
-- **iPod Classic 6G (Reuhno):** Real F1061/F1055/F1060 .ithmb files decoded successfully (BGR15 channel-swap, MSB replication — both confirmed correct). 30 reference PNG files match decoder output.
-- **iOpenPod (TheRealSavi):** Empirically validated 50+ profiles across multiple iPod models purchased and tested. Confirmed "no known issues for iPod Nano and iPod Classic models." Our 53 profiles derive from the same format ID sources — hardware validation covered by iOpenPod's testing. See [iOpenPod#140](https://github.com/TheRealSavi/iOpenPod/issues/140).
-- **iPhone 5 (iOS 7):** 956 T-prefix files — 100% extraction
-- **Jakarade.com F00-F08:** 227 public T-prefix files — 100% JPEG+EXIF detection
+- **iPod Classic 6G (Reuhno):** F1061/F1055/F1060 sample files decode successfully; the 30 generated reference PNGs in [`samples/reuhno-reference/`](samples/reuhno-reference/README.md) match decoder output (BGR15 channel-swap, MSB replication).
+- **iOpenPod (TheRealSavi):** iOpenPod reports empirical validation of 50+ profiles on multiple iPod models its maintainer purchased and tested, and reports no known issues for iPod Nano and iPod Classic models. Our 53 profiles derive from the same format-ID sources but have not been validated on hardware by this project. See [iOpenPod#140](https://github.com/TheRealSavi/iOpenPod/issues/140).
+- **iPhone 5 (iOS 7) and Jakarade.com F00-F08:** T-prefix corpora decoded successfully; the Jakarade files are public sources listed in [ACKNOWLEDGMENTS.md](docs/ACKNOWLEDGMENTS.md).
 - **MVS CTF 2026 (iOS 18):** iPhone 14 Plus full filesystem image scanned — 3 `.ithmb` files found but use a different proprietary format (iOS Photos framework, not decodable by this codec)
 
 > Other known sources (FAU.edu, ~500 files) have live directory listings but downloads return 404. Not available for testing.
@@ -360,7 +361,7 @@ Output options: `--raw` for raw BGRA binary, `--format bin` for explicit binary,
 
 ## Benchmarks
 
-Measured on AMD Ryzen AI 9 HX 370 . Same order across both Rust and C#.
+Measured on AMD Ryzen AI 9 HX 370.
 
 | Decoder           | 64×64   | 720×480          |
 | ----------------- | ------- | ---------------- |
@@ -374,7 +375,6 @@ Measured on AMD Ryzen AI 9 HX 370 . Same order across both Rust and C#.
 | Reordered RGB555  | —       | 632 µs (512×512) |
 
 See [`BENCHMARKS.md`](docs/benchmarks/BENCHMARKS.md) for full results (all 4 sizes, encoder throughput, methodology).
-With SIMD, Rust is faster than the C# original on 5 of 8 decoders (see BENCHMARKS.md for full comparison).
 
 ### Performance Limits
 
@@ -401,7 +401,7 @@ Theoretical maximum throughput per format at 256×256 (L2 cache ~1 MB, ~100 GB/s
 
 This codec was first implemented in **C#** as a Native AOT plugin for ImageGlass v10. The **Rust** workspace evolved from that reference to enable broader distribution (crates.io, CLI, Python bindings). See [EVOLUTION.md](docs/EVOLUTION.md) for the full migration story, architecture decisions, and acknowledgments.
 
-The C# reference repository ([B67687/Ithmb-Codec-CSharp](https://github.com/B67687/Ithmb-Codec-CSharp)) is archived but remains the authoritative source for algorithm verification.
+The C# reference repository ([B67687/Ithmb-Codec-CSharp](https://github.com/B67687/Ithmb-Codec-CSharp)) is archived; the Rust workspace is the maintained implementation.
 
 ## Profile Reference
 
@@ -414,13 +414,13 @@ Each profile defines the pixel encoding, dimensions, byte length per frame, and 
 ## Limitations
 
 > [!WARNING]
-> **T-prefix (JPEG-embedded) validated on 1,183 real files (956 iPhone 5 + 227 Jakarade); F-prefix raw decoders validated on iPod Classic 6G samples (F1061/F1055/F1060).** Raw decoders exist for 53 known profiles and pass roundtrip tests (see [STATS.md](docs/STATS.md) for current count).
+> **T-prefix (JPEG-embedded) decoding has been exercised on the corpora described in [ACKNOWLEDGMENTS.md](docs/ACKNOWLEDGMENTS.md); F-prefix raw decoders have been checked against the F1061/F1055/F1060 sample set.** Raw decoders exist for 53 built-in profiles and pass roundtrip tests.
 >
 > **F-prefix decoder coverage is broad but not exhaustive.** 53 profiles cover known iPod/iPhone formats through iPod Nano 7G and iPhone 2G. Unknown formats from obscure firmware versions may still exist. [Open an issue](https://github.com/B67687/ithmb-codec/issues) if you encounter one.
 >
-> **JPEG SOI must be within the first 4 MB** of the file (covers all known real files). For unknown raw files, the codec falls back to byte-level JPEG carving.
+> **JPEG SOI must be within the first 4 MB** of the file (true of every real file in our survey). For unknown raw files, the codec falls back to byte-level JPEG carving.
 >
-> **Hardware validation details** — see [HARDWARE_GUIDE.md](docs/guides/HARDWARE_GUIDE.md) for the full device testing matrix and methodology.
+> **Hardware validation details** — see [HARDWARE_GUIDE.md](docs/guides/HARDWARE_GUIDE.md) for the validation status and the procedure for testing new formats.
 >
 > **SIMD acceleration** — SSE2 for YUV conversion paths (UYVY, YCbCr420, CL, CLCL). AVX2 and ARM NEON runtime dispatch via ``. On macOS ARM, NEON is gated (known runner edge case) and falls back to scalar — see [STANDARDS.md](docs/standards/STANDARDS.md) for details.
 
@@ -435,7 +435,7 @@ Each profile defines the pixel encoding, dimensions, byte length per frame, and 
 | "File too large" error       | File exceeds the **8 MB** guard — should never happen for normal iPhone photos. Open an issue if it does.               |
 
 > [!TIP]
-> If a file doesn't decode correctly, [open an issue](https://github.com/B67687/ithmb-codec/issues) with a sample link. You can also try the official [web decoder](https://ithmb-codec.dev/ithmb-decoder/) or [ithmb.org](https://ithmb.org) — browser-based .ithmb decoders (offline, no upload) — to compare results.
+> If a file doesn't decode correctly, [open an issue](https://github.com/B67687/ithmb-codec/issues) with a sample link. You can also compare results with the project's [web decoder](https://ithmb-codec.dev/ithmb-decoder/) — browser-based, offline, no upload.
 
 ---
 
@@ -443,11 +443,11 @@ Each profile defines the pixel encoding, dimensions, byte length per frame, and 
 
 The library was developed through iterative research, implementation, review, and release cycles:
 
-1. **Format survey** — 33 open-source .ithmb implementations found and analyzed
+1. **Format survey** — 33 open-source .ithmb implementations surveyed (listed in [ACKNOWLEDGMENTS.md](docs/ACKNOWLEDGMENTS.md))
 2. **Format table extraction** — iOpenPod (50+ entries), libgpod, iLounge threads, and Keith's iPod Photo Reader provided dimension/encoding tables for 53 profiles
 3. **Implementation** — Pure Rust workspace with 8 decoders, JPEG decode, PhotoDB/ArtworkDB support, CLI tooling, PyO3 Python bindings, and sample generator
-4. **Testing** — Current test count in [STATS.md](docs/STATS.md); unit tests across roundtrip, fuzz, libfuzzer, parsers, speculative paths, buffer-too-small guards, trailing-padding tolerance, JPEG carving fallback, multi-frame raw decode, rotation roundtrip, byte-level corruption fuzz, BGR15 channel-swap, PhotoDB roundtrip write, PhotoDB integrity, PhotoDB JPEG blob decode, device-specific format tables, concurrency stress tests, and format ID profile tests
-5. **Review cycles** — 5 rounds of multi-agent review: ~47 findings fixed covering memory safety, threading, ABI compatibility, buffer overflow, integer overflow, and defense-in-depth
+4. **Testing** — Test assets are listed in [STATS.md](docs/STATS.md); unit tests across roundtrip, fuzz, libfuzzer, parsers, speculative paths, buffer-too-small guards, trailing-padding tolerance, JPEG carving fallback, multi-frame raw decode, rotation roundtrip, byte-level corruption fuzz, BGR15 channel-swap, PhotoDB roundtrip write, PhotoDB integrity, PhotoDB JPEG blob decode, device-specific format tables, concurrency stress tests, and format ID profile tests
+5. **Review cycles** — multiple rounds of multi-agent review, with findings fixed across memory safety, threading, ABI compatibility, buffer overflow, integer overflow, and defense-in-depth
 6. **Release** — Published via GitHub Releases
 
 <div align="center"><img src="https://cdn.jsdelivr.net/gh/B67687/ithmb-codec@main/docs/diagrams/pipeline.svg" alt="Development pipeline diagram" width="100%"></div>
@@ -460,7 +460,7 @@ Quality checks run locally before release:
 
 ```bash
 cargo clippy --all-targets -- -D warnings  # Lint
-cargo test                                 # All tests (see [STATS.md](docs/STATS.md) for current count)
+cargo test                                 # All tests (current counts are reported by CI)
 cargo audit                                # Advisory check
 cargo fuzz build                           # Fuzz targets compile check
 ```
@@ -502,7 +502,7 @@ This codec has been systematically reviewed across multiple rounds:
 | 4     | Coverage expansion — SIMD tail boundaries, cancellation, profile validation, statistical completeness | 2026-07 |
 | 5     | Polish — benchmark regression baseline, ADR docs, review documentation                                | 2026-07 |
 
-**Current test count:** See [STATS.md](docs/STATS.md) for the latest count and suite breakdown.
+**Test counts change with every commit:** CI runs the full suite on every push to main. Test and verification assets are listed in [STATS.md](docs/STATS.md).
 
 **Known gaps:**
 
@@ -515,7 +515,5 @@ The C# reference implementation ([B67687/Ithmb-Codec-CSharp](https://github.com/
 ## License
 
 MIT — see [LICENSE](LICENSE).
-
-Commercial use? See the [Enterprise License](https://ithmb-codec.dev/enterprise/).
 
 The original IthmbDecoder reference implementation (PR [#2316](https://github.com/d2phap/ImageGlass/pull/2316)) was GPL-3.0. This library is a clean-room implementation, informed by format behavior described in that PR but using no GPL code.

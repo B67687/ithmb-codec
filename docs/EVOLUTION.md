@@ -17,16 +17,16 @@ The C# codec was a **pure-managed Native AOT shared library** implementing the [
 
 - **Single target**: a `.dll`/`.so`/`.dylib` loaded by ImageGlass
 - **Framework**: .NET 10 Native AOT (`TreatWarningsAsErrors`, `AnalysisLevel=latest-recommended`)
-- **Quality**: 5 rounds of multi-agent systematic review, ~47 issues caught and fixed
-- **Tests**: 594 passing, including 30 golden reference vectors from real iPod samples
+- **Quality**: multi-agent systematic review rounds, with issues caught and fixed
+- **Tests**: a large suite including golden reference vectors (counts live in the C# repo)
 - **Coverage**: exhaustive RGB565 roundtrip (65,536 values), statistical validation (entropy, histogram, decorrelation), SIMD constant validation, cancellation tests
 - **Decoders**: 7 (RGB565, RGB555, UYVY, YCbCr 4:2:0, CL, CLCL, JPEG) + 53 profiles
-- **Thoroughness**: 30 reference decode PNG files from Reuhno's synthetic iPod data
+- **Reference data**: 30 reference decode PNG files from Reuhno's synthetic iPod data
 - **Limitations**: Windows-first (ImageGlass is Windows-only), no crates.io/PyPI distribution, no standalone CLI
 
 ### Strengths that carried forward
 
-The C# code established every format decoding algorithm used in the Rust port. The BT.601 coefficients, the SIMD shuffle patterns, the YUV conversion math, the profile database, and the PhotoDB/ArtworkDB chunk parser were all proven in C# first. The Rust port is algorithmically a direct translation of the C# reference.
+The C# code established the format decoding algorithms the Rust port started from. The BT.601 coefficients, the SIMD shuffle patterns, the YUV conversion math, the profile database, and the PhotoDB/ArtworkDB chunk parser were implemented and tested in C# first. The Rust port is algorithmically a direct translation of the C# reference.
 
 ---
 
@@ -40,7 +40,7 @@ The C# codec was excellent at its job — decoding `.ithmb` files inside ImageGl
 | --------------------- | ----------------------------- | --------------------------------- |
 | **crates.io library** | Not possible (Native AOT DLL) | `cargo add ithmb-core`            |
 | **Standalone CLI**    | Not possible                  | `cargo install ithmb-cli`         |
-| **Python bindings**   | Not possible                  | `pip install ithmb-codec` (PyO3)  |
+| **Python bindings**   | Not possible                  | `pip install ithmb-core` (PyO3)  |
 | **Fuzz testing**      | No equivalent                 | `cargo fuzz` with libfuzzer       |
 | **Cross-platform**    | Windows-primary               | Linux/macOS/Windows native        |
 | **Ecosystem reach**   | ImageGlass only               | Any Rust/Python project           |
@@ -53,16 +53,16 @@ The initial Rust port prioritized coverage over thoroughness. Comparing the two 
 
 | Area                                                                                                                                                                                                                                                           | C# (after 5 review rounds)               | Rust (current)                            |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | ----------------------------------------- |
-| Golden vectors                                                                                                                                                                                                                                                 | 30 reference PNG files from real samples | 30 golden vectors + synthetic fixtures ✅ |
+| Golden vectors                                                                                                                                                                                                                                                 | Reference PNG files from Reuhno's sample set | Golden vectors + synthetic fixtures ✅ |
 | RGB565 roundtrip                                                                                                                                                                                                                                               | All 65,536 values                        | All 65,536 values ✅                      |
 | SIMD const validation                                                                                                                                                                                                                                          | Dedicated test file                      | Dedicated test file ✅                    |
 | Statistical validation                                                                                                                                                                                                                                         | Decorrelation, entropy, histogram        | Full parity ✅                            |
-| SIMD tail coverage                                                                                                                                                                                                                                             | Widths 2,3,7,15,16,17                    | 42 boundary cases ✅                      |
+| SIMD tail coverage                                                                                                                                                                                                                                             | Widths 2,3,7,15,16,17                    | SIMD tail boundary cases ✅               |
 | Benchmark regression                                                                                                                                                                                                                                           | baseline.csv + CI gate                   | Divan baselines + CI gate ✅              |
-| ADR documentation                                                                                                                                                                                                                                              | 3 decision records                       | 5 decision records ✅                     |
+| ADR documentation                                                                                                                                                                                                                                              | Decision records                         | Decision records ✅                       |
 | Cancellation tests                                                                                                                                                                                                                                             | Thread-safe polling                      | Barrier-sync + loop tests ✅              |
 | Profile validation                                                                                                                                                                                                                                             | —                                        | 53 profiles validated ✅                  |
-> **Note:** This gap existed because the Rust code was written in fewer, faster cycles. The C# code had more review rounds applied to it. **After 3 waves of dedicated quality work, the Rust port has achieved full parity with the C# reference across all dimensions.**
+> **Note:** This gap existed because the Rust code was written in fewer, faster cycles. The C# code had more review rounds applied to it. **After 3 waves of dedicated quality work, the Rust port reached parity with the C# reference on the dimensions tracked in this table.**
 
 ---
 
@@ -86,9 +86,9 @@ The initial Rust port prioritized coverage over thoroughness. Comparing the two 
 
 ### ADR-3: 54 built-in profiles + external profiles.json
 
-**Decision:** Ship 54 profiles embedded in the binary (from iOpenPod, libgpod, and hardware validation), with an optional external `profiles.json` for runtime overrides. *(Amended 2026-08: profile 1044 disabled at load time → 53 active; raw dataset still holds 54, incl. the disabled entry. See PROFILES.md.)*
+**Decision:** Ship 54 profiles embedded in the binary (from iOpenPod, libgpod, and Reuhno's sample set), with an optional external `profiles.json` for runtime overrides. *(Amended 2026-08: profile 1044 disabled at load time → 53 active; raw dataset still holds 54, incl. the disabled entry. See PROFILES.md.)*
 
-**Rationale:** The C# version proved the profile database is stable across iPod generations. Embedding it avoids runtime file lookups while letting advanced users override without recompilation. External profiles are parsed by a custom AOT-safe JSON parser (no reflection).
+**Rationale:** The C# version had found the profile database stable across the iPod generations it covered. Embedding it avoids runtime file lookups while letting advanced users override without recompilation. External profiles are parsed by a custom AOT-safe JSON parser (no reflection).
 
 **Trade-off:** Profile discovery relies on the 4-byte F-prefix in `.ithmb` files. If Apple introduces a new format variant that reuses an existing prefix, the fallback-encoding chain handles it — but only if the profile is known.
 
@@ -119,19 +119,19 @@ The `cabi` crate was extracted into its own repository. This:
 
 ### Phase 4: Quality parity (complete)
 
-Closed the quality gap between the C# reference and Rust port through 11 dedicated tasks across 3 waves:
+Closed the quality gap between the C# reference and Rust port through a series of dedicated tasks across 3 waves:
 
-- Golden reference vector tests (30 Reuhno samples) ✅
+- Golden reference vector tests (Reuhno sample set) ✅
 - Exhaustive roundtrip coverage (65,536 RGB565 values) ✅
 - SIMD constant validation ✅
 - Statistical test completeness ✅
 - Zero-alloc hot paths ✅
-- Architecture decision records (5 ADRs) ✅
+- Architecture decision records ✅
 - SIMD tail/small-width coverage (42 boundary cases) ✅
 - Cancellation-in-loop unit tests ✅
 - Profile validation (53 profiles) ✅
 - Benchmark regression baseline + CI gate ✅
-- Pre-commit hook optimization (~8s) ✅
+- Pre-commit hook optimization ✅
 - WASM target + C API FFI + demo pages ✅
 - EVOLUTION.md with full migration story ✅
 | Release | Date | Highlights |
@@ -154,18 +154,18 @@ The following areas are deferred (not blocking functionality):
 | Gap                        | Reason                                                                                                              | Status                             |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
 | **NEON CI runner**         | No reliable free ARM64 CI. macOS runners have known edge cases (STANDARDS.md). NEON code exists but untested in CI. | Deferred                           |
-| **Real-device validation** | Golden vectors are from synthetic data. Savi (iOpenPod) validated against real hardware.                            | Deferred (needs hardware donation) |
+| **Real-device validation** | Our golden vectors are synthetic. iOpenPod reports hardware validation of its own profile set; this repo's 53 profiles have not been hardware-tested. | Deferred (needs hardware donation) |
 
 The Rust codec stands on the shoulders of the C# version, which was itself built on the work of the iPod reverse-engineering community:
 
-- **iOpenPod (Savi)** — primary format profile reference, 50+ empirically validated entries
+- **iOpenPod (Savi)** — primary format profile reference; iOpenPod reports 50+ entries validated on real hardware
 - **libgpod** — PhotoDB/ArtworkDB chunk parser foundations
 - **Keith's iPod Photo Reader (kebwi)** — original reverse engineering (2005), 13 decode methods, multi-frame confirmation
 - **clickwheel (dstaley)** — C# ArtworkDB read/write, format ID tables
 - **pyithmb (wrinklykong)** — Python YUV reference decoder
-- **Reuhno** — first public F-prefix .ithmb test vectors + 30 reference PNG files (CC0)
+- **Reuhno** — public F-prefix .ithmb test vectors + 30 reference PNG files (CC0)
 - **mgminformatique** — iPod photo recovery tool, independent format analysis
 - **Frulko** — iPod sync tool and analysis
 - **ImageGlass** — plugin ABI that motivated the C# implementation
 
-The C# reference codebase ([B67687/Ithmb-Codec-CSharp](https://github.com/B67687/Ithmb-Codec-CSharp)) remains the authoritative source for algorithm verification. Its thoroughness — 594 tests, 30 golden vectors, documented review rounds — set the quality standard that the Rust port has now matched.
+The C# reference codebase ([B67687/Ithmb-Codec-CSharp](https://github.com/B67687/Ithmb-Codec-CSharp)) remains the source of the algorithms the Rust port was verified against. Its test vectors and documented review rounds informed the Rust port's test suite.

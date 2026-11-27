@@ -280,7 +280,7 @@ The spec-to-code fidelity verification compares SPECIFICATION.md against the as-
 6. **Regression tests lock bugs.** When a bug is found, the FIRST action is to write a test that reproduces it. Then fix the code. The test stays as a regression guard.
 7. **Tests anchor to features.** Each test carries its feature ID (F-###, see docs/FEATURES.md): tests that prove a feature contract, feature entries that name their tests. An `applied` feature with no linked test is untested intent; a test with no feature is dead weight or an unregistered feature: flag both.
 
-**Realized in this repo:** 570 unit tests across 17 suites (docs/STATS.md), including exhaustive per-format roundtrip (RGB565 over 65,536 values, RGB555 over 32,768, CL over 15,625), 14 golden vectors against the C# reference, 11 concurrency tests, 21 Miri tests over the unsafe SIMD kernels, and 6 libfuzzer targets with 1.2M+ iterations and zero crashes.
+**Realized in this repo:** the test suite covers exhaustive per-format roundtrip (RGB565 over 65,536 values, RGB555 over 32,768, CL over 15,625), golden vectors against the C# reference, concurrency and cancellation tests, Miri over the unsafe SIMD kernels, and the six libfuzzer targets. Current counts are reported by CI; test assets are listed in docs/STATS.md.
 
 ## 10. Evolution & Phase Exit
 

@@ -4,7 +4,7 @@
 //! used by iPod Classic/Nano/Photo/Video, iPhone 2G, and iPod Touch to store photo
 //! and album art thumbnails.
 //!
-//! This is the canonical reference implementation. All decoder logic lives here;
+//! All decoder logic lives here;
 //! language-specific wrappers (C FFI, WASM, Python bindings) call into this core.
 //!
 //! # Quick start

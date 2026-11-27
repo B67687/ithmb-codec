@@ -3,7 +3,7 @@ requires = ["maturin>=1.7,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "ithmb-codec"
+name = "ithmb-core"
 dynamic = ["version"]
 requires-python = ">=3.10"
 classifiers = [
@@ -15,9 +15,9 @@ classifiers = [
     "Operating System :: OS Independent",
     "License :: OSI Approved :: MIT License",
 ]
-description = "Python bindings for Ithmb-Codec — decode Apple .ithmb thumbnail files"
+description = "Python bindings for ITHMB Codec — decode Apple .ithmb thumbnail files"
 license = "MIT"
-authors = [{ name = "B67687" }]
+authors = [{ name = "Nami" }]
 readme = "README.md"
 dependencies = []
 

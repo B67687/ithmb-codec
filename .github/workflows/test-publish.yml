@@ -1,7 +1,8 @@
 # test-publish.yml — DEV trial: build one wheel and publish it to TestPyPI on every
 # push to main, then verify a clean-venv install. This filename is LOAD-BEARING:
-# the TestPyPI pending publisher binds owner/repo/workflow-file exactly
-# (B67687/ithmb-codec-dev, test-publish.yml). Do NOT rename without updating TestPyPI.
+# the TestPyPI trusted publisher for the `ithmb-core` project binds
+# owner/repo/workflow-file exactly (B67687/ithmb-codec-dev, test-publish.yml).
+# Do NOT rename without updating TestPyPI.
 # Single target (x86_64-linux) for speed; same maturin invocation as release.yml.
 # The public real-PyPI release (publish.yml, v* tags, 5 targets + sdist) is a
 # later step and lives in the public repo — do NOT add it here.
@@ -94,7 +95,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: ithmb-codec-x86_64-unknown-linux-gnu
+          name: ithmb-core-x86_64-unknown-linux-gnu
           path: target/wheels/*.whl
           if-no-files-found: error
 
@@ -113,7 +114,7 @@ jobs:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           path: dist
-          pattern: ithmb-codec-*
+          pattern: ithmb-core-*
           merge-multiple: true
       - name: Check if this version is already on TestPyPI
         id: check
@@ -126,11 +127,11 @@ jobs:
           # TestPyPI rejects re-uploads, and the Cargo version only bumps on
           # releases — so every dev push after the first trial of a version
           # would 400 without this skip.
-          PAGE=$(curl -sSL 'https://test.pypi.org/simple/ithmb-codec/')
+          PAGE=$(curl -sSL 'https://test.pypi.org/simple/ithmb-core/')
           # Our stamp is always BASE-dev.RUN; PEP 440 normalizes that to BASE.devRUN
           # in wheel filenames (dash dropped, not underscored).
           FILEVER="${VER/-dev./.dev}"
-          if echo "$PAGE" | grep -q "ithmb_codec-$FILEVER"; then
+          if echo "$PAGE" | grep -q "ithmb_core-$FILEVER"; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
             echo "version $VER already on TestPyPI — publish step will skip"
           else
@@ -169,7 +170,7 @@ jobs:
           for i in $(seq 1 120); do
             # (pip/PEP 440 prints .devN while Cargo stamps -dev.N — match the index form).
             FILEVER="${CARGO_VER/-dev./.dev}"
-            if curl -sSL https://test.pypi.org/simple/ithmb-codec/ | grep -q "ithmb_codec-$FILEVER"; then
+            if curl -sSL https://test.pypi.org/simple/ithmb-core/ | grep -q "ithmb_core-$FILEVER"; then
               echo "stamped version visible after ${i}x5s"; VISIBLE=1; break
             fi
             sleep 5
@@ -183,7 +184,7 @@ jobs:
             if /tmp/verify-venv/bin/pip install \
               --index-url https://test.pypi.org/simple/ \
               --extra-index-url https://pypi.org/simple/ \
-              "ithmb-codec==$CARGO_VER"; then
+              "ithmb-core==$CARGO_VER"; then
               INSTALLED=1; echo "installed on attempt $attempt"; break
             fi
             echo "install attempt $attempt failed (CDN skew?) — retrying in 30s"
@@ -195,5 +196,5 @@ jobs:
           assert ithmb_core.__version__ == '$CARGO_VER', (
               f'version mismatch: installed {ithmb_core.__version__} != Cargo $CARGO_VER')
           assert len(ithmb_core.list_profiles()) == 53, 'expected 53 active profiles'
-          print(f'ok: ithmb-codec {ithmb_core.__version__} == Cargo, 53 profiles')
+          print(f'ok: ithmb-core {ithmb_core.__version__} == Cargo, 53 profiles')
           "

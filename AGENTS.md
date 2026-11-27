@@ -37,7 +37,7 @@ ithmb-codec/
 │   ├── bench-prep.sh / run-bench-perf.sh
 │   └── git-commit-dated.sh
 ├── tools/check-benchmark-regression.sh  # CI bench gate (divan vs .github/baseline.json)
-├── samples/              # reuhno-reference/ (real device files) + synthetic/ (generated vectors)
+├── samples/              # reuhno-reference/ (generated reference vectors) + synthetic/ (generated sample files)
 ├── docs/                 # adr/, guides/, standards/, benchmarks/, RELEASING.md
 ├── deny.toml             # cargo-deny source allowlist
 ├── cliff.toml            # git-cliff changelog config
@@ -91,13 +91,13 @@ cargo clippy --fix --allow-dirty  # Auto-fix mechanical lints
 cargo nextest run --workspace          # Full suite (~40-60s, nextest 0.9.143)
 ```
 
-Key test categories (see docs/STATS.md for live counts):
+Key test categories (see docs/STATS.md for the test assets; current counts are reported by CI):
 
 - **Golden vectors**: Reference `.ithmb` to expected `.bin` byte-for-byte comparison
 - **Exhaustive roundtrip**: All 65,536 RGB565 values, all 32,768 RGB555 values
 - **SIMD tail**: 42 boundary widths (1..65) verifying SIMD matches scalar
-- **Fuzz**: 6 libfuzzer targets (cargo-fuzz, nightly pinned in fuzz/) plus 10,000+ random byte mutations
-- **Concurrency**: 11 stress scenarios (Barrier sync, cancellation, cache contention)
+- **Fuzz**: 6 libfuzzer targets (cargo-fuzz, nightly pinned in fuzz/) plus random byte-mutation tests
+- **Concurrency**: stress scenarios (Barrier sync, cancellation, cache contention)
 - **C API**: `cargo test -p ithmb-core --features c --test c_api_test`, includes the undersized-buffer guard test
 - **Profile validation**: All 53 profiles decode without error
 
@@ -183,7 +183,7 @@ Follow `docs/RELEASING.md`. In short: bump `Cargo.toml` (workspace) + CHANGELOG 
 - **SIMD compiled unconditionally**: SSE2/AVX2 for x64, NEON for ARM64 (runtime dispatch)
 - **C ABI plugin in separate repo**: [ImageGlass-Ithmb-Plugin](https://github.com/B67687/imageglass-ithmb-plugin)
 - **53 built-in profiles**: embedded in binary, optionally overridable via external `profiles.json`
-- **File size guard**: 8 MB max (ADR-0005), covers all known real-world files with 10× margin
+- **File size guard**: 8 MB max (ADR-0005), sized from our sample survey to cover observed real-world files with ~10× margin
 - **`cache` / `metrics` are feature-gated**; `c` is a feature too (cdylib only when enabled)
 
 ## Do Not Touch / Generated Paths

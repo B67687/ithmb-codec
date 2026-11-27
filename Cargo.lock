@@ -659,7 +659,7 @@ dependencies = [
 
 [[package]]
 name = "ithmb-codec"
-version = "1.9.10"
+version = "1.9.11"
 dependencies = [
  "ithmb-core",
  "pyo3",
@@ -667,7 +667,7 @@ dependencies = [
 
 [[package]]
 name = "ithmb-core"
-version = "1.9.10"
+version = "1.9.11"
 dependencies = [
  "divan",
  "image",
@@ -680,7 +680,7 @@ dependencies = [
 
 [[package]]
 name = "ithmb-gen"
-version = "1.9.10"
+version = "1.9.11"
 dependencies = [
  "clap",
  "ithmb-core",
@@ -688,7 +688,7 @@ dependencies = [
 
 [[package]]
 name = "ithmb-wasm"
-version = "1.9.10"
+version = "1.9.11"
 dependencies = [
  "ithmb-core",
  "wasm-bindgen",

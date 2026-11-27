@@ -76,7 +76,7 @@ Benchmarking showed hand-written SSE2/AVX2 RGB565→BGRA was 34× slower than LL
 ### Positive
 
 - **Clean separation**: Feature gates keep SIMD code isolated. Building without `--features simd` produces a fully functional scalar-only binary.
-- **Auditable unsafe**: All `unsafe` blocks are confined to `simd/*.rs` (per-module `#![allow(unsafe_code)]`). Miri verifies 21 SSE2 tests with zero UB.
+- **Auditable unsafe**: All `unsafe` blocks are confined to `simd/*.rs` (per-module `#![allow(unsafe_code)]`). Miri verifies the SSE2 tests with no UB found in the exercised paths.
 - **Scalar reference**: The scalar path is always the confirmed-correct reference. All SIMD identity tests compare against it byte-for-byte (15,625 nibble combos for CL, 65,536 values for RGB565).
 - **Zero-cost on unsupported platforms**: The `#[cfg]` guards ensure SIMD code is not even compiled on platforms where it cannot run.
 - **Runtime flexibility**: Within the SIMD gate, `is_x86_feature_detected!` lets SSE2-only CPUs (older x86_64) use the SSE2 path without a separate binary.

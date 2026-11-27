@@ -8,7 +8,7 @@ LEARNING SHIFT
     trapped inside the Windows-only ImageGlass plugin ABI and could not ship as a
     crates.io library, PyPI wheel, or WASM module.
   Decision: Rewrote the codec as a pure Rust workspace (ithmb-core + CLI, WASM, Python,
-    C ABI wrappers) with the C# repo archived as the authoritative algorithm reference.
+    C ABI wrappers) with the C# repo archived as the algorithm reference.
   Cost: A full rewrite plus a parity gap that took 3 waves of quality work to close
     (docs/EVOLUTION.md).
   What this enables: One codebase reaches crates.io, PyPI, the browser, and any C-FFI
@@ -24,20 +24,20 @@ LEARNING SHIFT
     built-in profiles (derived from iOpenPod's empirically validated set), resolved by
     prefix with a data-size heuristic as a tiebreaker.
   Cost: A curated profile table that must be maintained as new formats surface.
-  What this enables: Deterministic, hardware-validated decode for every known profile
+  What this enables: Deterministic decode for every profile in the built-in set
     instead of best-effort guessing.
 ```
 
 ```
 LEARNING SHIFT
   What we learned: The codec decodes untrusted files from photo libraries; the largest
-    known real frame is 810 KB, but pathological input could force unbounded allocation.
+    built-in frame is 810 KB, but pathological input could force unbounded allocation.
   Decision: Added an 8 MB file size guard enforced before any allocation (ADR-0005),
-    roughly a 10x safety margin over the largest observed frame.
+    roughly a 10x safety margin over the largest built-in frame.
   Cost: A hypothetical legitimate file over 8 MB would be rejected (theoretical: the
     iPod firmware caps files at ~500 MB).
   What this enables: OOM/DoS resistance on untrusted input without meaningful loss of
-    real-world coverage.
+    coverage for the files we have seen.
 ```
 
 ```

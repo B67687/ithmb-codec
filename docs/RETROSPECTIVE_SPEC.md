@@ -143,7 +143,7 @@ When you don't yet know what sources exist, use this methodology to FIND them:
 
 Confidence gate: >= 3 independent sources confirming the same format variant details. If sources disagree, note the discrepancy and investigate with hex dumps.
 
-*After discovery is complete, the following sources were identified. Use these as the authoritative references:*
+*After discovery is complete, the following sources were identified. Use these as the primary references:*
 
 #### Track A: Format RE Research (the obvious one)
 
@@ -367,7 +367,7 @@ ithmb/                              # Root (single workspace)
 #### 1b — README Template
 
 > Centered hero (logo + title + tagline) → badge row (platform, tests, license, stars) → pipeline SVG → feature bullets → quick start → usage → architecture → performance → dev → ecosystem → credits → license.
-> Full template generated at Phase 1, data filled during Phases 2-7. See actual README.md for the authoritative version.
+> Full template generated at Phase 1, data filled during Phases 2-7. See README.md for the current version.
 #### 1c — SVG Diagram Specs
 
 **Pipeline diagram** (`docs/diagrams/pipeline.d2`):
@@ -428,7 +428,7 @@ steps:
 
 #### 1f — AGENTS.md Structure
 > Spec: Repository Purpose → Structure → Decoder Pipeline Flow → Where to Look → Code Conventions → Test Patterns → What NOT to Do → Building → Key Decisions → Commands.
-> See AGENTS.md for the authoritative version.
+> See AGENTS.md for the current version.
 
 ### Phase 2: Format Specification (Day 8-13)
 
@@ -592,7 +592,7 @@ Step done
 
 ---
 
-## Layer 6: Authoritative Standards Registry
+## Layer 6: Standards Registry
 
 Every phase complies with these standards. Source URLs in the research phase documents.
 
@@ -634,7 +634,7 @@ Every phase complies with these standards. Source URLs in the research phase doc
 
 ---
 
-## Summary: What This Plan Guarantees
+## Summary: What This Plan Covers
 
 | Concern | How the plan addresses it |
 |---------|--------------------------|
